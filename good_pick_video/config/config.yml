@@ -1,0 +1,10 @@
+music_cli:
+  task: text-to-audio
+  model: facebook/musicgen-small
+voice_cli:
+  voice: zh-CN-XiaoyiNeural
+  rate: +0%
+  volume: +0%
+  top_padding: 320
+  bottom_padding: 320
+  bg_path: source/bg.mp4

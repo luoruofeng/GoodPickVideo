@@ -1,0 +1,21 @@
+# pip install -f https://download.pytorch.org/whl/torch_stable.html torch==2.3.0+cu121 
+# pip install -f https://download.pytorch.org/whl/torch_stable.html torchaudio==2.3.0+cu121 
+transformers==4.38.2
+
+# 微软edge语音生成
+edge-tts==6.1.11
+
+# 用于WAV文件操作
+scipy==1.12.0
+
+# 操作MP4文件
+moviepy==1.0.3
+
+# 需要先按照ffmpeg 才能操作
+ffmpeg-python==0.2.0
+
+# 处理音频
+pydub==0.25.1
+
+# vtt字幕操作
+webvtt-py==0.5.1
