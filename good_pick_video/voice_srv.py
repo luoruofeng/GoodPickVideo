@@ -71,6 +71,53 @@ class MP4ProcessorByffmpeg:
     def __init__(self, mp4_path, gpu = True):
         self.mp4_path = mp4_path
         self.gpu = gpu
+    
+    
+
+    # ffmpeg -i "C:\Users\luoru\Desktop\a\a\a.mp4" -vf ass="C://Users//luoru//Desktop//a//a//a.ass" "C:\Users\luoru\Desktop\a\a\a_temp.mp4"
+    # 在windows中上面这行命令的ass路径无法读取需先进入目录将ass改为相对路径
+    def add_ass_subtitles(self, subtitle_path):
+        print(f"Starting add_subtitle with subtitle_path={subtitle_path}")
+        
+        # 获取文件路径
+        input_path = self.mp4_path
+        temp_output = append_to_filename(input_path, "_temp")
+        
+        # 构建 ffmpeg 命令参数列表
+        hwaccel_args = ['-hwaccel', 'nvdec'] if self.gpu else []
+        
+        # 获取字幕文件的目录和文件名
+        subtitle_dir = os.path.dirname(subtitle_path)
+        subtitle_file = os.path.basename(subtitle_path)
+        
+        # 进入字幕文件的目录
+        original_dir = os.getcwd()
+        os.chdir(subtitle_dir)
+        print("进入文件夹: "+os.getcwd())
+
+        try:
+            # 构建 ffmpeg 命令
+            cmd = [
+                'ffmpeg',
+                '-i', input_path,
+                '-vf', f'ass={subtitle_file}',
+                temp_output
+            ] + hwaccel_args
+            
+            # 打印 ffmpeg 命令行
+            print(f"命令行: {' '.join(cmd)}")
+            
+            # 执行 ffmpeg 命令
+            subprocess.run(cmd, check=True)
+            
+            print(f"Video with subtitle saved to {temp_output}")
+            
+            replace_file(input_path, temp_output)
+        finally:
+            # 返回原始目录
+            os.chdir(original_dir)
+            print("进入文件夹: "+os.getcwd())
+    
 
     def get_width_height(self):
         # 生成 ffmpeg 命令
@@ -385,7 +432,7 @@ class MP4ProcessorByffmpeg:
         ffmpeg_cmd.run(overwrite_output=True)
         replace_file(self.mp4_path, temp_output)
 
-    def add_subtitles(self, vtt_path, font_size=24, color='white', bgcolor='black', bg_opacity=0.6, position='bottom'):
+    def add_vvt_subtitles(self, vtt_path, font_size=24, color='white', bgcolor='black', bg_opacity=0.6, position='bottom'):
         print("Adding subtitles to the video.")
         print(f"Input MP4 file: {self.mp4_path}")
         print(f"Input subtitles file: {vtt_path}")
@@ -459,7 +506,7 @@ def append_to_filename(file_path, append_str):
     # 组合成新的文件路径
     new_file_path = os.path.join(directory, new_filename)
     
-    return new_file_path
+    return os.path.normpath(new_file_path)
 
 
 import shutil

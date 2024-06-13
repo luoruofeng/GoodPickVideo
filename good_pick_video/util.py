@@ -1,5 +1,17 @@
 import os
 import shutil
+import re
+
+# 假设 caption 是一个包含文本的对象
+caption = type('', (), {})()  # 创建一个空对象模拟caption
+caption.text = "这是一个包含汉字的文本 example text"
+
+def contains_chinese(text):
+    """检查字符串中是否包含汉字"""
+    hanzi_pattern = re.compile(r'[\u4e00-\u9fff]')
+    return hanzi_pattern.search(text) is not None
+
+
 
 def get_filename_without_extension(path_or_filename):
     # 使用 os.path.basename 获取路径中的文件名（带后缀）
@@ -112,25 +124,7 @@ def find_file_with_extension(root_dir, target_extension):
             file_path = os.path.join(root, file)
             # 检查文件是否以指定后缀结尾
             if file_path.endswith(target_extension):
-                return file_path  # 返回找到的文件的绝对路径
+                return os.path.normpath(file_path)  # 返回找到的文件的绝对路径
 
     # 如果未找到指定后缀的文件，返回None
     return None
-
-
-if __name__ == "__main__":
-    # # 示例用法
-    # folder_path = "C:\\Users\\luoru\\Desktop\\a"  # 替换为指定的文件夹路径
-    # organizer = FileOrganizer(folder_path)
-    # organizer.organize_files()
-    # print("Files organized successfully.")
-    # 示例用法：定义一个操作函数来打印文件路径
-    def print_file_path(file_path):
-        print(file_path)
-
-    folder_path = "C:\\Users\\luoru\\Desktop\\a"  # 替换为指定的文件夹路径
-    organizer = FileOrganizer(folder_path)
-    
-    # 遍历子文件夹并打印每个文件的路径
-    organizer.process_subdirectories(print_file_path)
-    

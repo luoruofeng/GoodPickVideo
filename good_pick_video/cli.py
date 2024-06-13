@@ -68,7 +68,7 @@ def main():
                 converter.run_conversion(Config().voice_cli["rate"],Config().voice_cli["volume"])
             # mp3handler = MP3Handler(mp3_file)
             # music_duration = mp3handler.get_duration() # mp3时长
-            # processor = MP4ProcessorByffmpeg(mp4_file, gpu=True)
+            processor = MP4ProcessorByffmpeg(mp4_file, gpu=True)
             # video_duration = processor.get_video_duration() #mp4时长
             # if music_duration > video_duration:
             #     print(f'声音时长于视频时长: 声音{mp3_file}文件 视频{mp4_file}文件 声音{music_duration}秒 视频{video_duration}秒')
@@ -94,9 +94,14 @@ def main():
             ass_file = txt_file.replace(".txt", ".ass")
             formatted_vtt_file = append_to_filename(vtt_file,"_formatted")
             if vtt_file != None:
-                converter = SubtitleConverter(vtt_file)
+                if Config().voice_cli["keyword_dict_path"] is not None:#重新分词字幕文件
+                    converter = SubtitleConverter(vtt_file,segmenter_path=os.path.join(CURRENT_DIR,Config().voice_cli["keyword_dict_path"]))
+                else:#无需分词字幕文件
+                    converter = SubtitleConverter(vtt_file)
                 converter.format_vtt_file(formatted_vtt_file)
                 converter.convert_vtt_to_ass(ass_file)
+                processor.add_ass_subtitles(ass_file)
+
     
     organizer = FileOrganizer(args.input_dir)
     organizer.process_subdirectories(handler)

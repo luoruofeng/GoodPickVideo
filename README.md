@@ -1,7 +1,9 @@
 # GoodPickVideo
 好物视频生成器
 
-
+## 前置条件
+安装ffmpeg
+安装ImageMagick
 
 
 ## edge-tts的角色和性别

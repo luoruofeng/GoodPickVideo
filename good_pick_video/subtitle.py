@@ -1,8 +1,11 @@
 import webvtt
 import re
+from good_pick_video.segment_srv import Segmenter
+from good_pick_video import util
+
 
 class SubtitleConverter:
-    def __init__(self, vtt_path, name="Default", fontname="Arial", fontsize=20, primary_colour="&H00FFFFFF", secondary_colour="&H000000FF", outline_colour="&H00000000", back_colour="&H64000000", bold=-1, italic=0, underline=0, strikeout=0, scale_x=100, scale_y=100, spacing=0, angle=0, border_style=1, outline=1, shadow=0, alignment=2, margin_l=10, margin_r=10, margin_v=10, encoding=1):
+    def __init__(self, vtt_path, name="Default", fontname="Arial", fontsize=20, primary_colour="&H00FFFFFF", secondary_colour="&H000000FF", outline_colour="&H00000000", back_colour="&H64000000", bold=-1, italic=0, underline=0, strikeout=0, scale_x=100, scale_y=100, spacing=0, angle=0, border_style=1, outline=1, shadow=0, alignment=4, margin_l=10, margin_r=10, margin_v=10, encoding=1, segmenter_path = None):
         self.vtt_path = vtt_path
         self.name = name
         self.fontname = fontname
@@ -22,11 +25,13 @@ class SubtitleConverter:
         self.border_style = border_style
         self.outline = outline
         self.shadow = shadow
-        self.alignment = alignment
+        self.alignment = alignment #1: 底部左对齐 2: 底部居中 3: 底部右对齐 4: 中部左对齐 5: 中部居中 6: 中部右对齐 7: 顶部左对齐 8: 顶部居中 9: 顶部右对齐
         self.margin_l = margin_l
         self.margin_r = margin_r
         self.margin_v = margin_v
         self.encoding = encoding
+        if segmenter_path is not None:
+            self.segmenter = Segmenter(segmenter_path) #用于重新分词 
 
 
     def format_vtt_file(self, output_path):
@@ -39,8 +44,12 @@ class SubtitleConverter:
         cleaned_captions = []
 
         for caption in vtt:
-            # 删除不必要的换行并删除文字中的空格
-            cleaned_text = caption.text.replace(" ", "")
+            # 如果包含汉字 删除不必要的换行并删除文字中的空格
+            cleaned_text = caption.text
+            if util.contains_chinese(caption.text):
+                cleaned_text = caption.text.replace(" ", "")
+                if self.segmenter is not None: #重新分词
+                    cleaned_text = self.segmenter.segment(cleaned_text)
             cleaned_captions.append((caption.start, caption.end, cleaned_text))
 
         # 创建并写入新的VTT文件
