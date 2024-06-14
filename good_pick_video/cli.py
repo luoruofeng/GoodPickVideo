@@ -54,53 +54,57 @@ def main():
     # threads.append(music_t)
 
     def handler(file_path):
-        txt_file = find_file_with_extension(file_path, "txt")
-        mp4_file = find_file_with_extension(file_path, "mp4")
+        txt_file = os.path.join(file_path, last_folder_name(file_path)+".txt")
+        mp4_file = txt_file.replace(".txt", ".mp4")
         if txt_file == None:
             print("没有在文件夹下找到txt文件: "+file_path)
             return
         mp3_file = txt_file.replace(".txt", ".mp3")
         vvt_file = txt_file.replace(".txt", ".vvt")
-        if txt_file != None and mp4_file != None: 
-            if not os.path.exists(mp3_file): #txt创建mp3
-                txt = read_txt_file(txt_file)
-                converter = TextToSpeechConverter(txt, txt_file, Config().voice_cli["voice"])
-                converter.run_conversion(Config().voice_cli["rate"],Config().voice_cli["volume"])
-            # mp3handler = MP3Handler(mp3_file)
-            # music_duration = mp3handler.get_duration() # mp3时长
-            processor = MP4ProcessorByffmpeg(mp4_file, gpu=True)
-            # video_duration = processor.get_video_duration() #mp4时长
-            # if music_duration > video_duration:
-            #     print(f'声音时长于视频时长: 声音{mp3_file}文件 视频{mp4_file}文件 声音{music_duration}秒 视频{video_duration}秒')
-            #     return
-            # processor.remove_audio() # 静音
-            # processor.combine_with_mp3(mp3_file) # mp4添加配音
-            # processor.crop_video(Config().voice_cli["top_padding"], Config().voice_cli["bottom_padding"]) #mp4裁剪大小
+        
+        if not os.path.exists(mp3_file): #txt创建mp3
+            txt = read_txt_file(txt_file)
+            converter = TextToSpeechConverter(txt, txt_file, Config().voice_cli["voice"])
+            converter.run_conversion(Config().voice_cli["rate"],Config().voice_cli["volume"])
+        mp3handler = MP3Handler(mp3_file)
+        music_duration = mp3handler.get_duration() # mp3时长
 
-            # #bg视频
-            # if Config().voice_cli["bg_path"] is not None:
-            #     bg_width = 0
-            #     bg_file = append_to_filename(mp4_file,"_bg")
-            #     if not os.path.exists(bg_file):
-            #         copy_file(os.path.join(CURRENT_DIR,Config().voice_cli["bg_path"]), bg_file) #复制bg视频
-            #     bg_processor = MP4ProcessorByffmpeg(bg_file)
-            #     bg_width,_ = bg_processor.get_width_height()
-            #     bg_processor.trim_or_loop_video(video_duration) #bg视频长度 = 视频长度
-            #     processor.resize_video(bg_width) #修改视频的比例 根据bg视频的宽度
-            #     processor.overlay_video(bg_file) #将视频重叠放到bg视频上
-            
-            # 字幕
-            vtt_file = txt_file.replace(".txt", ".vtt")
-            ass_file = txt_file.replace(".txt", ".ass")
-            formatted_vtt_file = append_to_filename(vtt_file,"_formatted")
-            if vtt_file != None:
-                if Config().voice_cli["keyword_dict_path"] is not None:#重新分词字幕文件
-                    converter = SubtitleConverter(vtt_file,segmenter_path=os.path.join(CURRENT_DIR,Config().voice_cli["keyword_dict_path"]))
-                else:#无需分词字幕文件
-                    converter = SubtitleConverter(vtt_file)
-                converter.format_vtt_file(formatted_vtt_file)
-                converter.convert_vtt_to_ass(ass_file)
-                processor.add_ass_subtitles(ass_file)
+        processor = MP4ProcessorByffmpeg(mp4_file, gpu=True)
+        if not os.path.exists(mp4_file): #生成纯色的mp4
+            print("视频文件不存在 生成新的纯色mp4",mp4_file)
+            processor.generate_blank_video(width=Config().video_cli["width"], height=Config().video_cli["height"], color=Config().video_cli["bg_color"], duration=music_duration)
+        # video_duration = processor.get_video_duration() #mp4时长
+        # if music_duration > video_duration:
+        #     print(f'声音时长于视频时长: 声音{mp3_file}文件 视频{mp4_file}文件 声音{music_duration}秒 视频{video_duration}秒')
+        #     return
+        # processor.remove_audio() # 静音
+        # processor.combine_with_mp3(mp3_file) # mp4添加配音
+        # processor.crop_video(Config().voice_cli["top_padding"], Config().voice_cli["bottom_padding"]) #mp4裁剪大小
+
+        # #bg视频
+        # if Config().voice_cli["bg_path"] is not None:
+        #     bg_width = 0
+        #     bg_file = append_to_filename(mp4_file,"_bg")
+        #     if not os.path.exists(bg_file):
+        #         copy_file(os.path.join(CURRENT_DIR,Config().voice_cli["bg_path"]), bg_file) #复制bg视频
+        #     bg_processor = MP4ProcessorByffmpeg(bg_file)
+        #     bg_width,_ = bg_processor.get_width_height()
+        #     bg_processor.trim_or_loop_video(video_duration) #bg视频长度 = 视频长度
+        #     processor.resize_video(bg_width) #修改视频的比例 根据bg视频的宽度
+        #     processor.overlay_video(bg_file) #将视频重叠放到bg视频上
+        
+        # 字幕
+        vtt_file = txt_file.replace(".txt", ".vtt")
+        ass_file = txt_file.replace(".txt", ".ass")
+        formatted_vtt_file = append_to_filename(vtt_file,"_formatted")
+        if vtt_file != None:
+            if Config().voice_cli["keyword_dict_path"] is not None:#重新分词字幕文件
+                converter = SubtitleConverter(vtt_file,segmenter_path=os.path.join(CURRENT_DIR,Config().voice_cli["keyword_dict_path"]))
+            else:#无需分词字幕文件
+                converter = SubtitleConverter(vtt_file)
+            converter.format_vtt_file(formatted_vtt_file)
+            converter.convert_vtt_to_ass(ass_file)
+            processor.add_ass_subtitles(ass_file)
 
     
     organizer = FileOrganizer(args.input_dir)

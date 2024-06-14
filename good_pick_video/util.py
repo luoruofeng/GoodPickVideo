@@ -116,6 +116,24 @@ def read_txt_file(file_path):
     return None  # 发生异常时返回 None
 
 
+def last_folder_name(abs_path):
+    # 使用 os.path.split() 函数来分割路径，得到 (head, tail) 的形式
+    head, tail = os.path.split(abs_path)
+    
+    # 如果 tail 不为空，说明 abs_path 是文件夹路径，直接返回 tail
+    if tail:
+        return tail
+    
+    # 否则继续分割 head，直到找到最后一个非空的文件夹名
+    while head:
+        head, tail = os.path.split(head)
+        if tail:
+            return tail
+    
+    # 如果路径为空或者没有文件夹名，则返回空字符串
+    return ''
+
+
 def find_file_with_extension(root_dir, target_extension):
     # 遍历指定目录及其子目录下的所有文件和文件夹
     for root, dirs, files in os.walk(root_dir):

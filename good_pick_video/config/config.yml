@@ -9,3 +9,7 @@ voice_cli:
   bottom_padding: 320
   bg_path: source/bg.mp4
   keyword_dict_path: source/keyword_dict.txt
+video_cli:
+  width: 1080
+  height: 1620 
+  bg_color: '#dc0460'

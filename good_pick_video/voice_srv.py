@@ -119,6 +119,32 @@ class MP4ProcessorByffmpeg:
             print("进入文件夹: "+os.getcwd())
     
 
+    def generate_blank_video(self, width=1080, height=1920, color="#ffffff", duration=1):
+        print(f"Starting generate_blank_video with width={width}, height={height}, color={color}, duration={duration}")
+        
+        # 构建 ffmpeg 命令参数列表
+        hwaccel_args = ['-hwaccel', 'nvdec'] if self.gpu else []
+
+        color_str = f"color={color}"
+        
+        # 构建 ffmpeg 命令参数列表
+        cmd = [
+            'ffmpeg',
+            '-f', 'lavfi',
+            '-i', f'color={color_str}:s={width}x{height}:d={duration}',
+            '-c:v', 'libx264',
+            '-pix_fmt', 'yuv420p',
+            self.mp4_path
+        ] + hwaccel_args
+        
+        # 打印 ffmpeg 命令行
+        print(f"命令行: {' '.join(cmd)}")
+        
+        # 执行 ffmpeg 命令
+        subprocess.run(cmd, check=True)
+        
+        print(f"Blank video saved to {self.mp4_path}")
+
     def get_width_height(self):
         # 生成 ffmpeg 命令
         input_video_path = self.mp4_path
@@ -559,3 +585,10 @@ def replace_file(source_path, target_path):
     except OSError as e:
         print(f"Error occurred: {e}")
 
+
+
+
+# 将十六进制颜色转换为RGB
+def hex_to_rgb( hex_color):
+    hex_color = hex_color.lstrip('#')
+    return tuple(int(hex_color[i:i+2], 16) for i in (0, 2, 4))

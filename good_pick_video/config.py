@@ -30,3 +30,7 @@ class Config:
     @property
     def voice_cli(self):
         return CNF['voice_cli']
+    
+    @property
+    def video_cli(self):
+        return CNF['video_cli']
