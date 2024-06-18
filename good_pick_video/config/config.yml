@@ -8,8 +8,13 @@ voice_cli:
   top_padding: 320
   bottom_padding: 320
   bg_path: source/bg.mp4
-  keyword_dict_path: source/keyword_dict.txt
 video_cli:
   width: 1080
-  height: 1620 
+  height: 1920 
   bg_color: '#dc0460'
+subtitle_cli:
+  split: true
+  keyword_dict_path: source/keyword_dict.txt
+  fad_out: 100
+  size_ratio: 150
+  show_duration: 40

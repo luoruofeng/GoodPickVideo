@@ -73,7 +73,6 @@ class MP4ProcessorByffmpeg:
         self.gpu = gpu
     
     
-
     # ffmpeg -i "C:\Users\luoru\Desktop\a\a\a.mp4" -vf ass="C://Users//luoru//Desktop//a//a//a.ass" "C:\Users\luoru\Desktop\a\a\a_temp.mp4"
     # 在windows中上面这行命令的ass路径无法读取需先进入目录将ass改为相对路径
     def add_ass_subtitles(self, subtitle_path):

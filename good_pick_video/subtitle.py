@@ -2,7 +2,8 @@ import webvtt
 import re
 from good_pick_video.segment_srv import Segmenter
 from good_pick_video import util
-
+from datetime import timedelta
+from good_pick_video.config import Config
 
 class SubtitleConverter:
     def __init__(self, vtt_path, name="Default", fontname="Arial", fontsize=20, primary_colour="&H00FFFFFF", secondary_colour="&H000000FF", outline_colour="&H00000000", back_colour="&H64000000", bold=-1, italic=0, underline=0, strikeout=0, scale_x=100, scale_y=100, spacing=0, angle=0, border_style=1, outline=1, shadow=0, alignment=4, margin_l=10, margin_r=10, margin_v=10, encoding=1, segmenter_path = None):
@@ -33,6 +34,34 @@ class SubtitleConverter:
         if segmenter_path is not None:
             self.segmenter = Segmenter(segmenter_path) #用于重新分词 
 
+    def split_vtt(self, output):
+        """Process a VTT file to split subtitle lines based on spaces and adjust timings."""
+        with open(self.vtt_path , 'r', encoding='utf-8') as file:
+            lines = file.readlines()
+        
+        new_lines = []
+        i = 0
+        
+        while i < len(lines):
+            line = lines[i].strip()
+            if re.match(r'\d{2}:\d{2}:\d{2}\.\d{3} --> \d{2}:\d{2}:\d{2}\.\d{3}', line):
+                start_time, end_time = line.split(' --> ')
+                i += 1
+                text = lines[i].strip()
+                new_subtitles = split_subtitle_line(start_time, end_time, text)
+                for new_start, new_end, new_text in new_subtitles:
+                    new_lines.append(f"{new_start} --> {new_end}\n")
+                    new_lines.append(f"{new_text}\n"+"\n")
+            else:
+                new_lines.append(line + '\n')
+            
+            i += 1
+        
+        with open(output, 'w', encoding='utf-8') as file:
+            file.writelines(new_lines)
+
+        replace_file(self.vtt_path, output)        
+
 
     def format_vtt_file(self, output_path):
         vtt_text = ""
@@ -58,7 +87,8 @@ class SubtitleConverter:
             for start, end, text in cleaned_captions:
                 f.write(f"{start} --> {end}\n{text}\n\n")
         
-        self.vtt_path = output_path
+        replace_file(self.vtt_path, output_path)
+
 
     def convert_vtt_to_ass(self, output_path):
         vtt = webvtt.read(self.vtt_path)
@@ -70,6 +100,15 @@ class SubtitleConverter:
             start = self._convert_timestamp(caption.start)
             end = self._convert_timestamp(caption.end)
             text = caption.text.replace("\n", "\\N")
+
+            style_start = "{"
+            style_end = "}"
+            show_animation = "\\t(0,"+str(Config().subtitle_cli["show_duration"])+",\\fscx"+str(Config().subtitle_cli["size_ratio"])+"\\fscy"+str(Config().subtitle_cli["size_ratio"])+")" 
+            fad_out = "\\fad(0,"+str(Config().subtitle_cli["fad_out"])+")"
+            font_borader_style = "\\bord4\\3c&H000000&"
+            text = style_start +show_animation + fad_out + style_end + style_start + font_borader_style + style_end + text
+            
+            
             ass_content += f"Dialogue: 0,{start},{end},{self.name},,0,0,0,,{text}\n"
 
         with open(output_path, 'w', encoding='utf-8-sig') as f:
@@ -92,3 +131,77 @@ class SubtitleConverter:
         milliseconds = round(int(milliseconds) / 10)  # Convert milliseconds to centiseconds
         return f"{int(hours):01d}:{int(minutes):02d}:{int(seconds):02d}.{int(milliseconds):02d}"
 
+
+def parse_vtt_time(time_str):
+    """Parse a VTT time string into a timedelta object."""
+    hours, minutes, seconds_milliseconds = time_str.split(':')
+    seconds, milliseconds = map(int, seconds_milliseconds.split('.'))
+    return timedelta(hours=int(hours), minutes=int(minutes), seconds=int(seconds), milliseconds=milliseconds)
+
+def format_vtt_time(td):
+    """Format a timedelta object into a VTT time string."""
+    total_seconds = int(td.total_seconds())
+    milliseconds = int((td.total_seconds() - total_seconds) * 1000)
+    hours = total_seconds // 3600
+    minutes = (total_seconds % 3600) // 60
+    seconds = total_seconds % 60
+    return f"{hours:02}:{minutes:02}:{seconds:02}.{milliseconds:03}"
+
+def split_subtitle_line(start_time, end_time, text):
+    """Split a subtitle line into multiple lines based on spaces and adjust timings."""
+    words = text.split()
+    total_words = len(words)
+    total_fonts = len(text.replace(" ", ""))
+    
+    start_td = parse_vtt_time(start_time)
+    end_td = parse_vtt_time(end_time)
+    total_duration = end_td - start_td
+    
+    new_subtitles = []
+    current_start = start_td
+    current_text = ''
+    
+    for i, word in enumerate(words):
+        if current_text:
+            current_text += ' ' + word
+        else:
+            current_text = word
+        
+        if i == total_words - 1 or current_text.count(' ') >= 0:
+            # word_count = len(current_text.split())
+            # current_duration = total_duration * (word_count / total_words)
+            current_duration = total_duration * (len(word) / total_fonts)
+            current_end = current_start + current_duration
+            
+            new_subtitles.append((format_vtt_time(current_start), format_vtt_time(current_end), current_text))
+            
+            current_start = current_end
+            current_text = ''
+    
+    return new_subtitles
+
+
+import os
+
+def replace_file(source_path, target_path):
+    """
+    Delete the source file and rename the target file to the source file's name.
+
+    Args:
+        source_path (str): Path to the source file to be deleted.
+        target_path (str): Path to the target file to be renamed.
+    """
+    try:
+        # Delete the source file
+        if os.path.exists(source_path):
+            os.remove(source_path)
+            print(f"Deleted source file: {source_path}")
+        else:
+            print(f"Source file not found: {source_path}")
+
+        # Rename the target file to the source file's name
+        os.rename(target_path, source_path)
+        print(f"Renamed target file {target_path} to {source_path}")
+
+    except OSError as e:
+        print(f"Error occurred: {e}")

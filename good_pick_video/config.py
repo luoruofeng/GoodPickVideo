@@ -34,3 +34,7 @@ class Config:
     @property
     def video_cli(self):
         return CNF['video_cli']
+    
+    @property
+    def subtitle_cli(self):
+        return CNF['subtitle_cli']
