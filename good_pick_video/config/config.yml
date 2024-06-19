@@ -2,7 +2,7 @@ music_cli:
   task: text-to-audio
   model: facebook/musicgen-small
 voice_cli:
-  voice: 'zh-CN-XiaoyiNeural'
+  voice: 'zh-CN-YunjianNeural'
   rate: +0%
   volume: +0%
   top_padding: 320
@@ -11,23 +11,27 @@ voice_cli:
 video_cli:
   width: 1080
   height: 1920 
-  bg_color: '#dc0460'
+  bg_color: '#81ff00'
 subtitle_cli:
-  split: true
+  split: false
   keyword_dict_path: 'source/keyword_dict.txt'
   fad_out: 100
   size_ratio: 150
   show_duration: 40
-  font_size: 14
-  font_color: "&H00FFFFFF"
-  font_family: "SIMSUN"
-  font_single_size: 40
-  font_single_color: "&b2b2b2"
-  font_single_family: "SIMSUN"
-  font_single_border_color: "&a01441"
-  font_single_border_weight: 10
-  font_double_size: 70
-  font_double_color: "&a01441"
-  font_double_family: "SIMSUN"
-  font_double_border_color: "&b2b2b2"
+  font_size: 13
+  font_color: "&H00ffffff"
+  font_family: "∞¢¿Ô∞Õ∞Õ∆’ª›ÃÂ“ª H"
+  font_border_color: "&1bff00"
+  font_border_weight: 1
+  font_single_size: 20
+  font_single_color: "&000000"
+  font_single_family: "ZiTiQuanXinYiGuanHeiTi"
+  font_single_border_color: "&ff2049"
+  font_single_border_weight: 3
+  font_spacing: 0
+  font_alignment: 4
+  font_double_size: 26
+  font_double_color: "&000000"
+  font_double_family: "ZiTiQuanXinYiGuanHeiTi"
+  font_double_border_color: "&1bff00"
   font_double_border_weight: 1

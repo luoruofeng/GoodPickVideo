@@ -114,12 +114,15 @@ def main():
             text2speech_converter.fontname = Config().subtitle_cli["font_family"]
             text2speech_converter.fontsize = Config().subtitle_cli["font_size"]
             text2speech_converter.primary_colour = Config().subtitle_cli["font_color"]
-
+            text2speech_converter.outline_colour = Config().subtitle_cli["font_border_color"] #描边的颜色
+            text2speech_converter.outline = Config().subtitle_cli["font_single_border_weight"] #描边的宽度
+            text2speech_converter.spacing = Config().subtitle_cli["font_spacing"] #字间距
+            text2speech_converter.alignment = Config().subtitle_cli["font_alignment"]#字体位置
 
             text2speech_converter.format_vtt_file(formatted_vtt_file)
             if Config().subtitle_cli["split"] is True:
                 text2speech_converter.split_vtt(splited_vtt_file)#分词显示每行字幕
-            print("-----------------------------------")
+            
             text2speech_converter.convert_vtt_to_ass(ass_file)
             processor.add_ass_subtitles(ass_file)
 

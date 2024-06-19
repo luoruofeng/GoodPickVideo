@@ -5,7 +5,7 @@ from good_pick_video import util
 from datetime import timedelta
 from good_pick_video.config import Config
 
-STYLE_START, STYLE_END ,SHOW_ANIMATION ,FAD_OUT ,FONT_SINGLE_STYLE ,STYLE_NORMAL ,STYLE_SINGLE, STYLE_DOUBLE = "","","","","","","",""
+STYLE_START, STYLE_END ,SHOW_ANIMATION ,FAD_OUT ,FONT_SINGLE_STYLE,FONT_NORMAL_STYLE ,ANIMATION_NORMAL ,STYLE_SINGLE, STYLE_DOUBLE,STYLE_NORMAL = "","","","","","","","","",""
 
 class SubtitleConverter:
     def __init__(self, vtt_path, name="Default", fontname="Arial", fontsize=20, primary_colour="&H00FFFFFF", secondary_colour="&H000000FF", outline_colour="&H00000000", back_colour="&H64000000", bold=-1, italic=0, underline=0, strikeout=0, scale_x=100, scale_y=100, spacing=0, angle=0, border_style=1, outline=1, shadow=0, alignment=4, margin_l=10, margin_r=10, margin_v=10, encoding=1, segmenter_path = None,single_star_words = [], double_star_words = []):
@@ -38,16 +38,18 @@ class SubtitleConverter:
         self.single_star_words = single_star_words 
         self.double_star_words = double_star_words 
 
-        global STYLE_START, STYLE_END ,SHOW_ANIMATION ,FAD_OUT ,FONT_SINGLE_STYLE ,STYLE_NORMAL ,STYLE_SINGLE, STYLE_DOUBLE
+        global STYLE_START, STYLE_END ,SHOW_ANIMATION ,FAD_OUT ,FONT_SINGLE_STYLE,FONT_NORMAL_STYLE ,ANIMATION_NORMAL ,STYLE_SINGLE, STYLE_DOUBLE, STYLE_NORMAL
         STYLE_START = "{"
         STYLE_END = "}"
         SHOW_ANIMATION = "\\t(0,"+str(Config().subtitle_cli["show_duration"])+",\\fscx"+str(Config().subtitle_cli["size_ratio"])+"\\fscy"+str(Config().subtitle_cli["size_ratio"])+")" 
         FAD_OUT = "\\fad(0,"+str(Config().subtitle_cli["fad_out"])+")"
         FONT_SINGLE_STYLE = "\\bord"+str(Config().subtitle_cli["font_single_border_weight"])+"\\3c"+ Config().subtitle_cli["font_single_border_color"]+"&"+"\\c"+Config().subtitle_cli["font_single_color"]+"&"+"\\fn"+Config().subtitle_cli["font_single_family"]+"\\fs"+str(Config().subtitle_cli["font_single_size"])
         FONT_DOUBLE_STYLE = "\\bord"+str(Config().subtitle_cli["font_double_border_weight"])+"\\3c"+ Config().subtitle_cli["font_double_border_color"]+"&"+"\\c"+Config().subtitle_cli["font_double_color"]+"&"+"\\fn"+Config().subtitle_cli["font_double_family"]+"\\fs"+str(Config().subtitle_cli["font_double_size"])
-        STYLE_NORMAL = STYLE_START +SHOW_ANIMATION + FAD_OUT + STYLE_END
+        FONT_NORMAL_STYLE = "\\bord"+str(Config().subtitle_cli["font_border_weight"])+"\\3c"+ Config().subtitle_cli["font_border_color"]+"&"+"\\c"+Config().subtitle_cli["font_color"]+"&"+"\\fn"+Config().subtitle_cli["font_family"]+"\\fs"+str(Config().subtitle_cli["font_size"])
+        ANIMATION_NORMAL = STYLE_START+ FONT_NORMAL_STYLE +SHOW_ANIMATION + FAD_OUT + STYLE_END
         STYLE_SINGLE =  STYLE_START + FONT_SINGLE_STYLE + STYLE_END
         STYLE_DOUBLE =  STYLE_START + FONT_DOUBLE_STYLE + STYLE_END
+        STYLE_NORMAL = STYLE_START + FONT_NORMAL_STYLE + STYLE_END
 
     def split_vtt(self, output):
         """Process a VTT file to split subtitle lines based on spaces and adjust timings."""
@@ -117,7 +119,7 @@ class SubtitleConverter:
             text = caption.text.replace("\n", "\\N")
 
 
-            text = STYLE_NORMAL +  text
+            text = ANIMATION_NORMAL +  text
             print(text)
             print(self.single_star_words)
             text = add_import_word_style(text,self.single_star_words,STYLE_SINGLE,STYLE_NORMAL) #修改单引号样式
