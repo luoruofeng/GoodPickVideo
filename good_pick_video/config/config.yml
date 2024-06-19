@@ -2,19 +2,32 @@ music_cli:
   task: text-to-audio
   model: facebook/musicgen-small
 voice_cli:
-  voice: zh-CN-XiaoyiNeural
+  voice: 'zh-CN-XiaoyiNeural'
   rate: +0%
   volume: +0%
   top_padding: 320
   bottom_padding: 320
-  bg_path: source/bg.mp4
+  bg_path: 'source/bg.mp4'
 video_cli:
   width: 1080
   height: 1920 
   bg_color: '#dc0460'
 subtitle_cli:
   split: true
-  keyword_dict_path: source/keyword_dict.txt
+  keyword_dict_path: 'source/keyword_dict.txt'
   fad_out: 100
   size_ratio: 150
   show_duration: 40
+  font_size: 14
+  font_color: "&H00FFFFFF"
+  font_family: "SIMSUN"
+  font_single_size: 40
+  font_single_color: "&b2b2b2"
+  font_single_family: "SIMSUN"
+  font_single_border_color: "&a01441"
+  font_single_border_weight: 10
+  font_double_size: 70
+  font_double_color: "&a01441"
+  font_double_family: "SIMSUN"
+  font_double_border_color: "&b2b2b2"
+  font_double_border_weight: 1

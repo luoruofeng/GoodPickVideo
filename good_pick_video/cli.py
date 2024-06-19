@@ -4,6 +4,7 @@ import time
 from good_pick_video.voice_srv import MP3Handler, TextToSpeechConverter, MP4ProcessorByffmpeg, copy_file, append_to_filename
 from good_pick_video.config import Config
 from good_pick_video.subtitle import SubtitleConverter
+from good_pick_video.subtitle import extract_and_remove 
 import os
 from argparse import ArgumentParser
 import signal
@@ -57,14 +58,23 @@ def main():
         txt_file = os.path.join(file_path, last_folder_name(file_path)+".txt")
         mp4_file = txt_file.replace(".txt", ".mp4")
         mp3_file = txt_file.replace(".txt", ".mp3")
+        vtt_file = txt_file.replace(".txt", ".vtt")
+        ass_file = txt_file.replace(".txt", ".ass")
+        
         if txt_file == None:
             print("没有在文件夹下找到txt文件: "+file_path)
             return
         
+        txt = read_txt_file(txt_file)
+        single_star_words, double_star_words, txt = extract_and_remove(txt) #去除 * **  找出被* **围绕的词
+        print(f"单星号词:{single_star_words}")
+        print(f"双星号词:{double_star_words}")
+        print(f"无星号内容:{txt}")
+        
+
         if not os.path.exists(mp3_file): #txt创建mp3
-            txt = read_txt_file(txt_file)
-            converter = TextToSpeechConverter(txt, txt_file, Config().voice_cli["voice"])
-            converter.run_conversion(Config().voice_cli["rate"],Config().voice_cli["volume"])
+            text2speech_converter = TextToSpeechConverter(txt, txt_file, Config().voice_cli["voice"])
+            text2speech_converter.run_conversion(Config().voice_cli["rate"],Config().voice_cli["volume"])
         mp3handler = MP3Handler(mp3_file)
         music_duration = mp3handler.get_duration() # mp3时长
 
@@ -93,19 +103,24 @@ def main():
             processor.overlay_video(bg_file) #将视频重叠放到bg视频上
         
         # 字幕
-        vtt_file = txt_file.replace(".txt", ".vtt")
-        ass_file = txt_file.replace(".txt", ".ass")
         formatted_vtt_file = append_to_filename(vtt_file,"_formatted")
         splited_vtt_file = append_to_filename(vtt_file,"_split")
         if vtt_file != None:
             if Config().subtitle_cli["keyword_dict_path"] is not None:#重新分词字幕文件
-                converter = SubtitleConverter(vtt_file,segmenter_path=os.path.join(CURRENT_DIR,Config().subtitle_cli["keyword_dict_path"]))
+                text2speech_converter = SubtitleConverter(vtt_file,segmenter_path=os.path.join(CURRENT_DIR,Config().subtitle_cli["keyword_dict_path"]),single_star_words = single_star_words, double_star_words = double_star_words)
             else:#无需分词字幕文件
-                converter = SubtitleConverter(vtt_file)
-            converter.format_vtt_file(formatted_vtt_file)
+                text2speech_converter = SubtitleConverter(vtt_file,single_star_words = single_star_words, double_star_words = double_star_words)
+            
+            text2speech_converter.fontname = Config().subtitle_cli["font_family"]
+            text2speech_converter.fontsize = Config().subtitle_cli["font_size"]
+            text2speech_converter.primary_colour = Config().subtitle_cli["font_color"]
+
+
+            text2speech_converter.format_vtt_file(formatted_vtt_file)
             if Config().subtitle_cli["split"] is True:
-                converter.split_vtt(splited_vtt_file)#分词显示每行字幕
-            converter.convert_vtt_to_ass(ass_file)
+                text2speech_converter.split_vtt(splited_vtt_file)#分词显示每行字幕
+            print("-----------------------------------")
+            text2speech_converter.convert_vtt_to_ass(ass_file)
             processor.add_ass_subtitles(ass_file)
 
         processor.remove_audio() # 静音

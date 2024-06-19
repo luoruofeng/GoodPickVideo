@@ -5,8 +5,10 @@ from good_pick_video import util
 from datetime import timedelta
 from good_pick_video.config import Config
 
+STYLE_START, STYLE_END ,SHOW_ANIMATION ,FAD_OUT ,FONT_SINGLE_STYLE ,STYLE_NORMAL ,STYLE_SINGLE, STYLE_DOUBLE = "","","","","","","",""
+
 class SubtitleConverter:
-    def __init__(self, vtt_path, name="Default", fontname="Arial", fontsize=20, primary_colour="&H00FFFFFF", secondary_colour="&H000000FF", outline_colour="&H00000000", back_colour="&H64000000", bold=-1, italic=0, underline=0, strikeout=0, scale_x=100, scale_y=100, spacing=0, angle=0, border_style=1, outline=1, shadow=0, alignment=4, margin_l=10, margin_r=10, margin_v=10, encoding=1, segmenter_path = None):
+    def __init__(self, vtt_path, name="Default", fontname="Arial", fontsize=20, primary_colour="&H00FFFFFF", secondary_colour="&H000000FF", outline_colour="&H00000000", back_colour="&H64000000", bold=-1, italic=0, underline=0, strikeout=0, scale_x=100, scale_y=100, spacing=0, angle=0, border_style=1, outline=1, shadow=0, alignment=4, margin_l=10, margin_r=10, margin_v=10, encoding=1, segmenter_path = None,single_star_words = [], double_star_words = []):
         self.vtt_path = vtt_path
         self.name = name
         self.fontname = fontname
@@ -33,6 +35,19 @@ class SubtitleConverter:
         self.encoding = encoding
         if segmenter_path is not None:
             self.segmenter = Segmenter(segmenter_path) #用于重新分词 
+        self.single_star_words = single_star_words 
+        self.double_star_words = double_star_words 
+
+        global STYLE_START, STYLE_END ,SHOW_ANIMATION ,FAD_OUT ,FONT_SINGLE_STYLE ,STYLE_NORMAL ,STYLE_SINGLE, STYLE_DOUBLE
+        STYLE_START = "{"
+        STYLE_END = "}"
+        SHOW_ANIMATION = "\\t(0,"+str(Config().subtitle_cli["show_duration"])+",\\fscx"+str(Config().subtitle_cli["size_ratio"])+"\\fscy"+str(Config().subtitle_cli["size_ratio"])+")" 
+        FAD_OUT = "\\fad(0,"+str(Config().subtitle_cli["fad_out"])+")"
+        FONT_SINGLE_STYLE = "\\bord"+str(Config().subtitle_cli["font_single_border_weight"])+"\\3c"+ Config().subtitle_cli["font_single_border_color"]+"&"+"\\c"+Config().subtitle_cli["font_single_color"]+"&"+"\\fn"+Config().subtitle_cli["font_single_family"]+"\\fs"+str(Config().subtitle_cli["font_single_size"])
+        FONT_DOUBLE_STYLE = "\\bord"+str(Config().subtitle_cli["font_double_border_weight"])+"\\3c"+ Config().subtitle_cli["font_double_border_color"]+"&"+"\\c"+Config().subtitle_cli["font_double_color"]+"&"+"\\fn"+Config().subtitle_cli["font_double_family"]+"\\fs"+str(Config().subtitle_cli["font_double_size"])
+        STYLE_NORMAL = STYLE_START +SHOW_ANIMATION + FAD_OUT + STYLE_END
+        STYLE_SINGLE =  STYLE_START + FONT_SINGLE_STYLE + STYLE_END
+        STYLE_DOUBLE =  STYLE_START + FONT_DOUBLE_STYLE + STYLE_END
 
     def split_vtt(self, output):
         """Process a VTT file to split subtitle lines based on spaces and adjust timings."""
@@ -101,13 +116,12 @@ class SubtitleConverter:
             end = self._convert_timestamp(caption.end)
             text = caption.text.replace("\n", "\\N")
 
-            style_start = "{"
-            style_end = "}"
-            show_animation = "\\t(0,"+str(Config().subtitle_cli["show_duration"])+",\\fscx"+str(Config().subtitle_cli["size_ratio"])+"\\fscy"+str(Config().subtitle_cli["size_ratio"])+")" 
-            fad_out = "\\fad(0,"+str(Config().subtitle_cli["fad_out"])+")"
-            font_borader_style = "\\bord4\\3c&H000000&"
-            text = style_start +show_animation + fad_out + style_end + style_start + font_borader_style + style_end + text
-            
+
+            text = STYLE_NORMAL +  text
+            print(text)
+            print(self.single_star_words)
+            text = add_import_word_style(text,self.single_star_words,STYLE_SINGLE,STYLE_NORMAL) #修改单引号样式
+            text = add_import_word_style(text,self.double_star_words,STYLE_DOUBLE,STYLE_NORMAL) #修改双引号样式
             
             ass_content += f"Dialogue: 0,{start},{end},{self.name},,0,0,0,,{text}\n"
 
@@ -205,3 +219,26 @@ def replace_file(source_path, target_path):
 
     except OSError as e:
         print(f"Error occurred: {e}")
+
+
+import re
+
+def extract_and_remove(text):
+    # 提取被**包围且字符数大于等于1的词
+    double_star_words = re.findall(r'\*\*([^*]+)\*\*', text)
+    
+    # 提取被*包围且字符数大于等于1的词，但排除**的情况
+    single_star_words = re.findall(r'(?<!\*)\*([^*]+)\*(?!\*)', text)
+    
+    # 移除所有的*和**包围的词
+    text = text.replace("*","")
+    
+    return single_star_words, double_star_words, text
+
+def add_import_word_style(text, words:list, start_style:str,end_style: str):
+    # 检查第一个字符串是否包含第二个字符串
+    for w in words:
+        if w in text and w is not None and w != "":
+            # 替换第二个字符串，在其前后添加前缀和后缀
+            text = text.replace(w, f'{start_style}{w}{end_style}')
+    return text
