@@ -1,6 +1,8 @@
 music_cli:
   task: text-to-audio
   model: facebook/musicgen-small
+  single_sound: 'sound/coin07.mp3'
+  double_sound: 'sound/correct_answer2.mp3'
 voice_cli:
   voice: 'zh-CN-YunjianNeural'
   rate: +0%
@@ -21,7 +23,7 @@ subtitle_cli:
   font_alignment: 4
   font_size: 13
   font_color: "&H00ffffff"
-  font_family: "阿里巴巴普惠体一 H"
+  font_family: "阿里巴巴普惠体 Light"
   font_bold: 0
   font_spacing: 10
   font_underline: 0
@@ -29,7 +31,7 @@ subtitle_cli:
   font_border_weight: 1
   font_single_size: 20
   font_single_color: "&000000"
-  font_single_family: "ZiTiQuanXinYiGuanHeiTi"
+  font_single_family: "阿里汉仪智能黑体"
   font_single_border_color: "&ff2049"
   font_single_border_weight: 3
   font_single_bold: 1

@@ -1,3 +1,4 @@
+from datetime import datetime
 import os
 import shutil
 import re
@@ -146,3 +147,10 @@ def find_file_with_extension(root_dir, target_extension):
 
     # 如果未找到指定后缀的文件，返回None
     return None
+
+def time_str_to_timestamp(time_str):
+    # 解析时间字符串
+    dt = datetime.strptime(time_str, "%H:%M:%S.%f")
+    # 将时间转换为时间戳（以秒为单位的浮点数）
+    timestamp = dt.hour * 3600 + dt.minute * 60 + dt.second + dt.microsecond / 1e6
+    return timestamp

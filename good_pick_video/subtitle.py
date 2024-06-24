@@ -51,7 +51,7 @@ class SubtitleConverter:
         STYLE_DOUBLE =  STYLE_START + FONT_DOUBLE_STYLE + STYLE_END
         STYLE_NORMAL = STYLE_START + FONT_NORMAL_STYLE + STYLE_END
 
-    def split_vtt(self, output):
+    def split_vtt(self, output, single_sound_timestamps:list, double_sound_timestamps:list):
         """Process a VTT file to split subtitle lines based on spaces and adjust timings."""
         with open(self.vtt_path , 'r', encoding='utf-8') as file:
             lines = file.readlines()
@@ -69,15 +69,26 @@ class SubtitleConverter:
                 for new_start, new_end, new_text in new_subtitles:
                     new_lines.append(f"{new_start} --> {new_end}\n")
                     new_lines.append(f"{new_text}\n"+"\n")
+
+                    for w in self.single_star_words:
+                        if w in new_text:                         
+                            single_sound_timestamps.append(new_start)
+                            break
+                    
+                    for w in self.double_star_words:
+                        if w in new_text:
+                            double_sound_timestamps.append(new_start)
+                            break
             else:
                 new_lines.append(line + '\n')
             
             i += 1
-        
-        with open(output, 'w', encoding='utf-8') as file:
-            file.writelines(new_lines)
 
-        replace_file(self.vtt_path, output)        
+        if Config().subtitle_cli["split"] is True: #配置文件开启了分词
+            with open(output, 'w', encoding='utf-8') as file:
+                file.writelines(new_lines)
+
+            replace_file(self.vtt_path, output)        
 
 
     def format_vtt_file(self, output_path):
@@ -118,10 +129,9 @@ class SubtitleConverter:
             end = self._convert_timestamp(caption.end)
             text = caption.text.replace("\n", "\\N")
 
-
+            #给字幕添加进入和退出的样式和字体基本样式
             text = ANIMATION_NORMAL +  text
             print(text)
-            print(self.single_star_words)
             text = add_import_word_style(text,self.single_star_words,STYLE_SINGLE,STYLE_NORMAL) #修改单引号样式
             text = add_import_word_style(text,self.double_star_words,STYLE_DOUBLE,STYLE_NORMAL) #修改双引号样式
             
@@ -235,7 +245,7 @@ def extract_and_remove(text):
     # 移除所有的*和**包围的词
     text = text.replace("*","")
     
-    return single_star_words, double_star_words, text
+    return list(set(single_star_words)), list(set(double_star_words)), text
 
 def add_import_word_style(text, words:list, start_style:str,end_style: str):
     # 检查第一个字符串是否包含第二个字符串

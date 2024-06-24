@@ -72,6 +72,66 @@ class MP4ProcessorByffmpeg:
         self.mp4_path = mp4_path
         self.gpu = gpu
     
+
+    #有bug无法把声音进行重叠 只能覆盖部分声音
+    # def add_audio_to_video(self, mp3_path, start_time):
+        print(f"Starting add_audio_to_video with mp3_path={mp3_path}, start_time={start_time}")
+        
+        hwaccel_args = ['-hwaccel', 'nvdec'] if self.gpu else []
+
+        # 生成输出文件路径
+        output_path = os.path.splitext(self.mp4_path)[0] + '_with_audio.mp4'
+        
+        # 构建 ffmpeg 命令参数列表
+        cmd = [
+            'ffmpeg',
+            '-i', self.mp4_path,            # 输入视频文件
+            '-i', mp3_path,                 # 输入音频文件
+            '-filter_complex', '[0:a][1:a]amix=inputs=2:duration=first[aout]',  # 混合音频轨道
+            '-map', '0:v',                  # 保留视频轨道
+            '-map', '[aout]',               # 混合后的音频轨道
+            '-c:v', 'copy',                 # 保持视频编码不变
+            '-c:a', 'aac',                  # 设置音频编码
+            '-strict', 'experimental',      # 允许使用实验特性
+            output_path
+        ] + hwaccel_args
+        
+        # 打印 ffmpeg 命令行
+        print(f"命令行: {' '.join(cmd)}")
+        
+        # 执行 ffmpeg 命令
+        subprocess.run(cmd, check=True)
+        
+        print(f"Video with audio saved to {output_path}")
+
+        replace_file(self.mp4_path, output_path)
+
+
+    def generate_blank_video(self, width=1080, height=1920, color="#ffffff", duration=1):
+        print(f"Starting generate_blank_video with width={width}, height={height}, color={color}, duration={duration}")
+        
+        # 构建 ffmpeg 命令参数列表
+        hwaccel_args = ['-hwaccel', 'nvdec'] if self.gpu else []
+
+        color_str = f"color={color}"
+        
+        # 构建 ffmpeg 命令参数列表
+        cmd = [
+            'ffmpeg',
+            '-f', 'lavfi',
+            '-i', f'color={color_str}:s={width}x{height}:d={duration}',
+            '-c:v', 'libx264',
+            '-pix_fmt', 'yuv420p',
+            self.mp4_path
+        ] + hwaccel_args
+        
+        # 打印 ffmpeg 命令行
+        print(f"命令行: {' '.join(cmd)}")
+        
+        # 执行 ffmpeg 命令
+        subprocess.run(cmd, check=True)
+        
+        print(f"Blank video saved to {self.mp4_path}")
     
     # ffmpeg -i "C:\Users\luoru\Desktop\a\a\a.mp4" -vf ass="C://Users//luoru//Desktop//a//a//a.ass" "C:\Users\luoru\Desktop\a\a\a_temp.mp4"
     # 在windows中上面这行命令的ass路径无法读取需先进入目录将ass改为相对路径
@@ -117,32 +177,6 @@ class MP4ProcessorByffmpeg:
             os.chdir(original_dir)
             print("进入文件夹: "+os.getcwd())
     
-
-    def generate_blank_video(self, width=1080, height=1920, color="#ffffff", duration=1):
-        print(f"Starting generate_blank_video with width={width}, height={height}, color={color}, duration={duration}")
-        
-        # 构建 ffmpeg 命令参数列表
-        hwaccel_args = ['-hwaccel', 'nvdec'] if self.gpu else []
-
-        color_str = f"color={color}"
-        
-        # 构建 ffmpeg 命令参数列表
-        cmd = [
-            'ffmpeg',
-            '-f', 'lavfi',
-            '-i', f'color={color_str}:s={width}x{height}:d={duration}',
-            '-c:v', 'libx264',
-            '-pix_fmt', 'yuv420p',
-            self.mp4_path
-        ] + hwaccel_args
-        
-        # 打印 ffmpeg 命令行
-        print(f"命令行: {' '.join(cmd)}")
-        
-        # 执行 ffmpeg 命令
-        subprocess.run(cmd, check=True)
-        
-        print(f"Blank video saved to {self.mp4_path}")
 
     def get_width_height(self):
         # 生成 ffmpeg 命令

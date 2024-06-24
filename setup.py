@@ -29,6 +29,7 @@ def recursive_list_files_folders(base_path):
         result.append((get_install_path(os.path.join(base_path.split("/")[-1], folder_path)), file_paths))
     return result
 
+
 setup(
     name='good_pick_video',
     version='0.0.1',
@@ -37,13 +38,12 @@ setup(
     python_requires='>=3.11',
     install_requires=requirements,
     package_dir={'': project_dir},
-    data_files=[(get_install_path("config"), 
-                glob.glob("./good_pick_video/config/**/*", recursive=True)
-                ),(get_install_path("templates"), 
-                 glob.glob("./good_pick_video/templates/**/*", recursive=True)
-                ),(get_install_path("source"), 
-                 glob.glob("./good_pick_video/source/**/*", recursive=True)
-                )] + recursive_list_files_folders("good_pick_video/static"),
+    data_files=[
+        (get_install_path("config"), glob.glob("./good_pick_video/config/**/*", recursive=True)),
+        (get_install_path("templates"), glob.glob("./good_pick_video/templates/**/*", recursive=True)),
+        (get_install_path("source"), glob.glob("./good_pick_video/source/**/*", recursive=True)),
+        (get_install_path("sound"), glob.glob("./good_pick_video/sound/**/*", recursive=True))
+        ] + recursive_list_files_folders("good_pick_video/static"),
     entry_points={
         'console_scripts': [
             'good_pick_video = good_pick_video.cli:main',
