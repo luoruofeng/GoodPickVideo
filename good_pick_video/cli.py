@@ -113,7 +113,7 @@ def main():
                 text2speech_converter = SubtitleConverter(vtt_file,segmenter_path=os.path.join(CURRENT_DIR,Config().subtitle_cli["keyword_dict_path"]),single_star_words = single_star_words, double_star_words = double_star_words)
             else:#无需分词字幕文件
                 text2speech_converter = SubtitleConverter(vtt_file,single_star_words = single_star_words, double_star_words = double_star_words)
-
+            
             #设置字幕的一部分样式
             text2speech_converter.fontname = Config().subtitle_cli["font_family"]
             text2speech_converter.fontsize = Config().subtitle_cli["font_size"]
@@ -135,17 +135,17 @@ def main():
         processor.remove_audio() # 静音
         processor.combine_with_mp3(mp3_file) # mp4添加配音
 
-        # bug未实现
-        # #添加关键词音效
-        # if len(single_sound_timestamps) > 0:
-        #     print(f"单*需要添加的时间戳{single_sound_timestamps}")
-        #     for ts in single_sound_timestamps:
-        #         processor.add_audio_to_video(os.path.join(CURRENT_DIR,Config().music_cli["single_sound"]), time_str_to_timestamp(ts))
-        # #添加关键词音效
-        # if len(double_sound_timestamps) > 0:
-        #     print(f"双*需要添加的时间戳{double_sound_timestamps}")
-        #     for ts in double_sound_timestamps:
-        #         processor.add_audio_to_video(os.path.join(CURRENT_DIR,Config().music_cli["double_sound"]), time_str_to_timestamp(ts))
+
+        #添加关键词音效
+        if len(single_sound_timestamps) > 0:
+            print(f"单*需要添加的时间戳{single_sound_timestamps}")
+            for ts in single_sound_timestamps:
+                processor.add_audio_to_video(os.path.join(CURRENT_DIR,Config().music_cli["single_sound"]), time_str_to_timestamp(ts))
+        #添加关键词音效
+        if len(double_sound_timestamps) > 0:
+            print(f"双*需要添加的时间戳{double_sound_timestamps}")
+            for ts in double_sound_timestamps:
+                processor.add_audio_to_video(os.path.join(CURRENT_DIR,Config().music_cli["double_sound"]), time_str_to_timestamp(ts))
 
     
     organizer = FileOrganizer(args.input_dir)

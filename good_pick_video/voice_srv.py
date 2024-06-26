@@ -73,8 +73,7 @@ class MP4ProcessorByffmpeg:
         self.gpu = gpu
     
 
-    #有bug无法把声音进行重叠 只能覆盖部分声音
-    # def add_audio_to_video(self, mp3_path, start_time):
+    def add_audio_to_video(self, mp3_path, start_time):
         print(f"Starting add_audio_to_video with mp3_path={mp3_path}, start_time={start_time}")
         
         hwaccel_args = ['-hwaccel', 'nvdec'] if self.gpu else []
@@ -82,17 +81,19 @@ class MP4ProcessorByffmpeg:
         # 生成输出文件路径
         output_path = os.path.splitext(self.mp4_path)[0] + '_with_audio.mp4'
         
+        start_time = seconds_to_milliseconds(start_time)
+
         # 构建 ffmpeg 命令参数列表
         cmd = [
             'ffmpeg',
-            '-i', self.mp4_path,            # 输入视频文件
-            '-i', mp3_path,                 # 输入音频文件
-            '-filter_complex', '[0:a][1:a]amix=inputs=2:duration=first[aout]',  # 混合音频轨道
-            '-map', '0:v',                  # 保留视频轨道
-            '-map', '[aout]',               # 混合后的音频轨道
-            '-c:v', 'copy',                 # 保持视频编码不变
-            '-c:a', 'aac',                  # 设置音频编码
-            '-strict', 'experimental',      # 允许使用实验特性
+            '-i', self.mp4_path,  # 输入视频文件
+            '-i', mp3_path,  # 输入音频文件
+            '-filter_complex', f'[1:a]adelay={start_time}[a1];[0:a][a1]amix=inputs=2:duration=first[aout]',  # 混合音频轨道
+            '-map', '0:v',  # 保留视频轨道
+            '-map', '[aout]',  # 混合后的音频轨道
+            '-c:v', 'copy',  # 保持视频编码不变
+            '-c:a', 'aac',  # 设置音频编码
+            '-strict', 'experimental',  # 允许使用实验特性
             output_path
         ] + hwaccel_args
         
@@ -625,3 +626,8 @@ def replace_file(source_path, target_path):
 def hex_to_rgb( hex_color):
     hex_color = hex_color.lstrip('#')
     return tuple(int(hex_color[i:i+2], 16) for i in (0, 2, 4))
+
+
+def seconds_to_milliseconds(seconds):
+    milliseconds = int(seconds * 1000)
+    return milliseconds

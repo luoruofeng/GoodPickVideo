@@ -42,7 +42,8 @@ setup(
         (get_install_path("config"), glob.glob("./good_pick_video/config/**/*", recursive=True)),
         (get_install_path("templates"), glob.glob("./good_pick_video/templates/**/*", recursive=True)),
         (get_install_path("source"), glob.glob("./good_pick_video/source/**/*", recursive=True)),
-        (get_install_path("sound"), glob.glob("./good_pick_video/sound/**/*", recursive=True))
+        (get_install_path("sound"), glob.glob("./good_pick_video/sound/**/*", recursive=True)),
+        (get_install_path("font"), glob.glob("./good_pick_video/font/**/*", recursive=True))
         ] + recursive_list_files_folders("good_pick_video/static"),
     entry_points={
         'console_scripts': [

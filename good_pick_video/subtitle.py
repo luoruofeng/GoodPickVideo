@@ -239,13 +239,19 @@ def extract_and_remove(text):
     # 提取被**包围且字符数大于等于1的词
     double_star_words = re.findall(r'\*\*([^*]+)\*\*', text)
     
+    # 移除所有的**包围的词
+    for word in double_star_words:
+        text = text.replace("**", "")
+    
     # 提取被*包围且字符数大于等于1的词，但排除**的情况
     single_star_words = re.findall(r'(?<!\*)\*([^*]+)\*(?!\*)', text)
-    
-    # 移除所有的*和**包围的词
-    text = text.replace("*","")
+
+    # 移除所有的*包围的词
+    for word in single_star_words:
+        text = text.replace("*", "")
     
     return list(set(single_star_words)), list(set(double_star_words)), text
+
 
 def add_import_word_style(text, words:list, start_style:str,end_style: str):
     # 检查第一个字符串是否包含第二个字符串
