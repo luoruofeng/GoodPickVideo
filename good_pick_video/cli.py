@@ -133,21 +133,30 @@ def main():
             processor.add_ass_subtitles(ass_file) # ass字幕添加到video
 
         processor.remove_audio() # 静音
-        processor.combine_with_mp3(mp3_file) # mp4添加配音
-
+        processor.combine_with_mp3(mp3_file) # mp4添加声音
 
         #添加关键词音效
-        if len(single_sound_timestamps) > 0:
-            print(f"单*需要添加的时间戳{single_sound_timestamps}")
-            for ts in single_sound_timestamps:
-                processor.add_audio_to_video(os.path.join(CURRENT_DIR,Config().music_cli["single_sound"]), time_str_to_timestamp(ts))
-        #添加关键词音效
-        if len(double_sound_timestamps) > 0:
-            print(f"双*需要添加的时间戳{double_sound_timestamps}")
-            for ts in double_sound_timestamps:
-                processor.add_audio_to_video(os.path.join(CURRENT_DIR,Config().music_cli["double_sound"]), time_str_to_timestamp(ts))
+        if Config().music_cli["need_sound"]:
+            if len(single_sound_timestamps) > 0:
+                print(f"单*需要添加的时间戳{single_sound_timestamps}")
+                for ts in single_sound_timestamps:
+                    processor.add_audio_to_video(os.path.join(CURRENT_DIR,Config().music_cli["single_sound"]), time_str_to_timestamp(ts))
+            #添加关键词音效
+            if len(double_sound_timestamps) > 0:
+                print(f"双*需要添加的时间戳{double_sound_timestamps}")
+                for ts in double_sound_timestamps:
+                    processor.add_audio_to_video(os.path.join(CURRENT_DIR,Config().music_cli["double_sound"]), time_str_to_timestamp(ts))
 
-    
+        # 添加背景音乐        
+        if Config().music_cli["need_bg_music"]:
+            processor.combine_with_bg_mp3(os.path.join(CURRENT_DIR,Config().music_cli["bg_music"])) # mp4添加背景音乐
+            processor.modify_volume(Config().music_cli["change_volume"])
+
+
+        if Config().video_cli["need_append_mp4"]:
+            processor.append_mp4(os.path.join(CURRENT_DIR,Config().video_cli["append_mp4"])) # mp4添加背景音乐
+
+
     organizer = FileOrganizer(args.input_dir)
     organizer.process_subdirectories(handler)
     # manager = TextToSpeechConverter()

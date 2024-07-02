@@ -3,10 +3,14 @@ music_cli:
   model: facebook/musicgen-small
   single_sound: 'sound/coin07.mp3'
   double_sound: 'sound/correct_answer2.mp3'
+  bg_music: 'sound/bg.mp3'
+  need_bg_music: true 
+  need_sound: false 
+  change_volume: 4.0
 voice_cli:
   voice: 'zh-CN-YunjianNeural'
   rate: +0%
-  volume: +0%
+  volume: +20%
   top_padding: 320
   bottom_padding: 320
   bg_path: 'source/bg.mp4'
@@ -14,6 +18,8 @@ video_cli:
   width: 1080
   height: 1920 
   bg_color: '#81ff00'
+  need_append_mp4: true
+  append_mp4: "source/end.mp4"
 subtitle_cli:
   split: false
   keyword_dict_path: 'source/keyword_dict.txt'
@@ -23,7 +29,7 @@ subtitle_cli:
   font_alignment: 4
   font_size: 13
   font_color: "&H00ffffff"
-  font_family: "°¢Àï°Í°ÍÆÕ»ÝÌå Light"
+  font_family: "Alibaba-PuHuiTi-Bold"
   font_bold: 0
   font_spacing: 10
   font_underline: 0
@@ -31,7 +37,7 @@ subtitle_cli:
   font_border_weight: 1
   font_single_size: 20
   font_single_color: "&000000"
-  font_single_family: "°¢ÀïººÒÇÖÇÄÜºÚÌå"
+  font_single_family: "Alibaba-PuHuiTi-Bold"
   font_single_border_color: "&ff2049"
   font_single_border_weight: 3
   font_single_bold: 1

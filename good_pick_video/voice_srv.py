@@ -72,7 +72,7 @@ class MP4ProcessorByffmpeg:
         self.mp4_path = mp4_path
         self.gpu = gpu
     
-
+    #有bug添加音效后的声音大于添加音效前的声音
     def add_audio_to_video(self, mp3_path, start_time):
         print(f"Starting add_audio_to_video with mp3_path={mp3_path}, start_time={start_time}")
         
@@ -88,9 +88,37 @@ class MP4ProcessorByffmpeg:
             'ffmpeg',
             '-i', self.mp4_path,  # 输入视频文件
             '-i', mp3_path,  # 输入音频文件
-            '-filter_complex', f'[1:a]adelay={start_time}[a1];[0:a][a1]amix=inputs=2:duration=first[aout]',  # 混合音频轨道
+            '-filter_complex', f'[1:a]adelay={start_time}|{start_time}[a1];[0:a][a1]amix=inputs=2:duration=first[aout]',  # 混合音频轨道
             '-map', '0:v',  # 保留视频轨道
             '-map', '[aout]',  # 混合后的音频轨道
+            '-c:v', 'copy',  # 保持视频编码不变
+            '-c:a', 'aac',  # 设置音频编码
+            '-strict', 'experimental',  # 允许使用实验特性
+            output_path
+        ] + hwaccel_args
+
+        # 打印 ffmpeg 命令行
+        print(f"命令行: {' '.join(cmd)}")
+        
+        # 执行 ffmpeg 命令
+        subprocess.run(cmd, check=True)
+        
+        print(f"Video with audio saved to {output_path}")
+
+        replace_file(self.mp4_path, output_path)
+
+    # 出入 volume:float 音量变量，使mp4的音量更大
+    def modify_volume(self, volume=1.5):
+        print(f"Starting modify_volume with volume={volume}")
+
+        output_path = os.path.splitext(self.mp4_path)[0] + '_volume.mp4'
+        
+        hwaccel_args = ['-hwaccel', 'nvdec'] if self.gpu else []
+        # 构建 ffmpeg 命令参数列表
+        cmd = [
+            'ffmpeg',
+            '-i', self.mp4_path,  # 输入视频文件
+            '-filter:a', f'volume={volume}',  # 设置音量
             '-c:v', 'copy',  # 保持视频编码不变
             '-c:a', 'aac',  # 设置音频编码
             '-strict', 'experimental',  # 允许使用实验特性
@@ -102,10 +130,81 @@ class MP4ProcessorByffmpeg:
         
         # 执行 ffmpeg 命令
         subprocess.run(cmd, check=True)
-        
-        print(f"Video with audio saved to {output_path}")
+
+        print(f"Video with volume modified saved to {output_path}")
 
         replace_file(self.mp4_path, output_path)
+
+        
+        
+    # 将传入的mp4路径的视频拼接到现有的mp4文件之后
+    # ffmpeg -i C:\\Users\\luoru\\Desktop\\a\\a\\a.mp4 -i C:\\Users\\luoru\\.conda\\envs\\goodpick\\Lib\\site-packages\\good_pick_video\\source\\end.mp4 -filter_complex "[0:v][0:a][1:v][1:a]concat=n=2:v=1:a=1[outv][outa]" -map "[outv]" -map "[outa]" -c:v libx264 -c:a aac -strict experimental C:\\Users\\luoru\\Desktop\\a\\a\\a_append.mp4
+    def append_mp4(self, mp4_path):
+        print(f"Starting append_mp4 with mp4_path={mp4_path}")
+
+        hwaccel_args = ['-hwaccel', 'nvdec'] if self.gpu else []
+        # 生成输出文件路径
+        output_path = os.path.splitext(self.mp4_path)[0] + '_append.mp4'
+
+        # 构建 ffmpeg 命令参数列表
+        cmd = [
+            'ffmpeg',
+            '-i', self.mp4_path,  # 输入视频文件（主视频）
+            '-i', mp4_path,  # 输入视频文件（要拼接的视频）
+            '-filter_complex', '[0:v][0:a][1:v][1:a]concat=n=2:v=1:a=1[outv][outa]',  # 拼接视频轨道
+            '-map', '[outv]',  # 指定输出的视频流
+            '-map', '[outa]',
+            '-c:v', 'libx264',  # 保持视频编码不变
+            '-c:a', 'aac',  # 使用 AAC 编码音频
+            '-strict', 'experimental',  # 允许使用实验性特性
+            output_path
+        ]+hwaccel_args
+
+
+        # 打印 ffmpeg 命令行
+        print(f"命令行: {' '.join(cmd)}")
+
+        # 执行 ffmpeg 命令
+        subprocess.run(cmd, check=True)
+
+        print(f"Appended video saved to {output_path}")
+
+        replace_file(self.mp4_path, output_path)
+
+
+    # 将传入的mp3音频作为mp4的背景音乐，并且可以通过参数设置音乐音量的大小，如果mp3的时长小于mp4则可以重复播放mp3来覆盖整个mp4，如果mp3的时长大于mp4则以mp4的时长为准切断mp3
+    def combine_with_bg_mp3(self, mp3_path, volume=0.10):
+        print(f"Starting combine_with_mp3 with mp3_path={mp3_path}, volume={volume}")
+
+        hwaccel_args = ['-hwaccel', 'nvdec'] if self.gpu else []
+
+        # 生成输出文件路径
+        output_path = os.path.splitext(self.mp4_path)[0] + '_with_mp3.mp4'
+
+        # 构建 ffmpeg 命令参数列表
+        cmd = [
+            'ffmpeg',
+            '-i', self.mp4_path,  # 输入视频文件
+            '-i', mp3_path,  # 输入音频文件
+            '-filter_complex', f'[1:a]volume={volume},aloop=loop=-1:size=2G[aud];[0:a][aud]amix=inputs=2:duration=shortest[aout]',  # 循环播放背景音乐并调整音量
+            '-map', '0:v',  # 保留视频轨道
+            '-map', '[aout]',  # 混合后的音频轨道
+            '-c:v', 'copy',  # 保持视频编码不变
+            '-c:a', 'aac',  # 设置音频编码
+            '-strict', 'experimental',  # 允许使用实验特性
+            output_path
+        ] + hwaccel_args
+
+        # 打印 ffmpeg 命令行
+        print(f"命令行: {' '.join(cmd)}")
+
+        # 执行 ffmpeg 命令
+        subprocess.run(cmd, check=True)
+
+        print(f"Video with combined audio saved to {output_path}")
+
+        replace_file(self.mp4_path, output_path)
+
 
 
     def generate_blank_video(self, width=1080, height=1920, color="#ffffff", duration=1):
