@@ -43,9 +43,10 @@ class SubtitleConverter:
         STYLE_END = "}"
         SHOW_ANIMATION = "\\t(0,"+str(Config().subtitle_cli["show_duration"])+",\\fscx"+str(Config().subtitle_cli["size_ratio"])+"\\fscy"+str(Config().subtitle_cli["size_ratio"])+")" 
         FAD_OUT = "\\fad(0,"+str(Config().subtitle_cli["fad_out"])+")"
-        FONT_SINGLE_STYLE = "\\fsp"+str(Config().subtitle_cli["font_single_spacing"])+"\\u"+str(Config().subtitle_cli["font_single_underline"])+"\\bord"+str(Config().subtitle_cli["font_single_border_weight"])+"\\3c"+ Config().subtitle_cli["font_single_border_color"]+"&"+"\\1c"+Config().subtitle_cli["font_single_color"]+"&"+"\\fn"+Config().subtitle_cli["font_single_family"]+"\\fs"+str(Config().subtitle_cli["font_single_size"])+"\\b"+str(Config().subtitle_cli["font_single_bold"])
-        FONT_DOUBLE_STYLE = "\\fsp"+str(Config().subtitle_cli["font_double_spacing"])+"\\u"+str(Config().subtitle_cli["font_double_underline"])+"\\bord"+str(Config().subtitle_cli["font_double_border_weight"])+"\\3c"+ Config().subtitle_cli["font_double_border_color"]+"&"+"\\1c"+Config().subtitle_cli["font_double_color"]+"&"+"\\fn"+Config().subtitle_cli["font_double_family"]+"\\fs"+str(Config().subtitle_cli["font_double_size"])+"\\b"+str(Config().subtitle_cli["font_double_bold"])
-        FONT_NORMAL_STYLE = "\\fsp"+str(Config().subtitle_cli["font_spacing"])+"\\u"+str(Config().subtitle_cli["font_underline"])+"\\bord"+str(Config().subtitle_cli["font_border_weight"])+"\\3c"+ Config().subtitle_cli["font_border_color"]+"&"+"\\1c"+Config().subtitle_cli["font_color"]+"&"+"\\fn"+Config().subtitle_cli["font_family"]+"\\fs"+str(Config().subtitle_cli["font_size"])+"\\b"+str(Config().subtitle_cli["font_bold"])
+        
+        FONT_SINGLE_STYLE = "\\fsp"+str(Config().subtitle_cli["font_single_spacing"])+"\\u"+str(Config().subtitle_cli["font_single_underline"])+"\\bord"+str(Config().subtitle_cli["font_single_border_weight"])+"\\4c"+ Config().subtitle_cli["font_single_border_color"]+"&"+"\\1c"+Config().subtitle_cli["font_single_color"]+"&"+"\\fn"+Config().subtitle_cli["font_single_family"]+"\\fs"+str(Config().subtitle_cli["font_single_size"])+"\\b"+str(Config().subtitle_cli["font_single_bold"])+"\\shadow"+str(Config().subtitle_cli["font_single_shad"])+"\\3c"+ Config().subtitle_cli["font_single_shad_color"]+"&"
+        FONT_DOUBLE_STYLE = "\\fsp"+str(Config().subtitle_cli["font_double_spacing"])+"\\u"+str(Config().subtitle_cli["font_double_underline"])+"\\bord"+str(Config().subtitle_cli["font_double_border_weight"])+"\\4c"+ Config().subtitle_cli["font_double_border_color"]+"&"+"\\1c"+Config().subtitle_cli["font_double_color"]+"&"+"\\fn"+Config().subtitle_cli["font_double_family"]+"\\fs"+str(Config().subtitle_cli["font_double_size"])+"\\b"+str(Config().subtitle_cli["font_double_bold"])+"\\shadow"+str(Config().subtitle_cli["font_double_shad"])+"\\3c"+ Config().subtitle_cli["font_double_shad_color"]+"&"
+        FONT_NORMAL_STYLE = "\\fsp"+str(Config().subtitle_cli["font_spacing"])+"\\u"+str(Config().subtitle_cli["font_underline"])+"\\bord"+str(Config().subtitle_cli["font_border_weight"])+"\\4c"+ Config().subtitle_cli["font_border_color"]+"&"+"\\1c"+Config().subtitle_cli["font_color"]+"&"+"\\fn"+Config().subtitle_cli["font_family"]+"\\fs"+str(Config().subtitle_cli["font_size"])+"\\b"+str(Config().subtitle_cli["font_bold"])+"\\shadow"+str(Config().subtitle_cli["font_shad"])+"\\3c"+ Config().subtitle_cli["font_shad_color"]+"&"
         ANIMATION_NORMAL = STYLE_START+ FONT_NORMAL_STYLE +SHOW_ANIMATION + FAD_OUT + STYLE_END
         STYLE_SINGLE =  STYLE_START + FONT_SINGLE_STYLE + STYLE_END
         STYLE_DOUBLE =  STYLE_START + FONT_DOUBLE_STYLE + STYLE_END
@@ -99,7 +100,7 @@ class SubtitleConverter:
         vtt = webvtt.from_string(vtt_text)
 
         cleaned_captions = []
-
+        
         for caption in vtt:
             # 如果包含汉字 删除不必要的换行并删除文字中的空格
             cleaned_text = caption.text
@@ -118,7 +119,8 @@ class SubtitleConverter:
         replace_file(self.vtt_path, output_path)
 
 
-    def convert_vtt_to_ass(self, output_path):
+    def convert_vtt_to_ass(self, output_path, show_keyword=False):
+
         vtt = webvtt.read(self.vtt_path)
         ass_content = self._generate_ass_header()
         ass_content += "[Events]\n"
@@ -128,6 +130,26 @@ class SubtitleConverter:
             start = self._convert_timestamp(caption.start)
             end = self._convert_timestamp(caption.end)
             text = caption.text.replace("\n", "\\N")
+            
+            # 如果只需要显示带有关键字的句子 进行下面的逻辑判断
+            has_keyword = False
+            if show_keyword is True:
+                for w in self.single_star_words:
+                    if w in text:
+                        text = STYLE_SINGLE + text
+                        has_keyword = True
+                        break
+
+                if has_keyword is False:
+                    for w in self.double_star_words:
+                        if w in text:
+                            text = STYLE_DOUBLE + text
+                            has_keyword = True
+                            break
+                    
+                if has_keyword is False:
+                    continue
+
 
             #给字幕添加进入和退出的样式和字体基本样式
             text = ANIMATION_NORMAL +  text

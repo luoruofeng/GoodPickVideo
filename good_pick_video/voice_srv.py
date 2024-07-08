@@ -455,8 +455,9 @@ class MP4ProcessorByffmpeg:
         replace_file(input_path,temp_output)
 
 
-    def overlay_video(self, background_video_path):
-        print(f"Starting overlay_video with background_video_path={background_video_path}")
+
+    def overlay_video(self, background_video_path, alpha=0.8):
+        print(f"Starting overlay_video with background_video_path={background_video_path}, alpha={alpha}")
 
         # 生成 ffmpeg 命令
         input_video_path = self.mp4_path
@@ -477,28 +478,40 @@ class MP4ProcessorByffmpeg:
         overlay_x = (bg_width - input_width) // 2
         overlay_y = (bg_height - input_height) // 2
 
-        # 执行ffmpeg命令进行视频叠加
-        ffmpeg_cmd = (
-            ffmpeg
-            .input(background_video_path)
-            .overlay(ffmpeg.input(input_video_path), x=overlay_x, y=overlay_y)
-            .output(temp_output, acodec='copy')
-        )
+        print(f"Overlaying video {input_video_path} onto background video {background_video_path}. Overlay position: ({overlay_x}, {overlay_y})")
+
+        # 构建 ffmpeg 命令行
+        ffmpeg_cmd = [
+            'ffmpeg',
+            '-i', background_video_path,
+            '-i', input_video_path,
+            '-filter_complex',
+            f"[1:v]format=yuva420p,colorchannelmixer=aa={alpha}[fg];[0:v][fg]overlay=x={overlay_x}:y={overlay_y}",
+            '-c:a', 'copy',
+            temp_output
+        ]
 
         # 如果使用GPU，则在命令的最后添加 '-hwaccel nvdec'
         if self.gpu:
-            ffmpeg_cmd = ffmpeg_cmd.global_args('-hwaccel', 'nvdec')
+            ffmpeg_cmd.insert(1, '-hwaccel')
+            ffmpeg_cmd.insert(2, 'nvdec')
 
         # 打印 ffmpeg 命令行
-        cmd_line = ' '.join(ffmpeg_cmd.compile())
+        cmd_line = ' '.join(ffmpeg_cmd)
         print(f"命令行:  {cmd_line}")
 
         # 执行 ffmpeg 命令
-        ffmpeg_cmd.run()
+        result = subprocess.run(ffmpeg_cmd, capture_output=True, text=True)
 
-        print(f"Cropped video saved to {temp_output}")
+        # 检查命令执行是否成功
+        if result.returncode != 0:
+            print(f"Error: {result.stderr}")
+        else:
+            print(f"Cropped video saved to {temp_output}")
 
         replace_file(input_video_path, temp_output)
+
+
 
 
 

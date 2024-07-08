@@ -6,7 +6,7 @@ import math
 class GifCreator:
     def __init__(self, font_path='SourceHanSans-Normal.ttf', font_size=20, total_duration=1.0,
                  text_color='#000000', outline_color='#FFFFFF', outline_width=1,
-                 bg_color='#C8C8C8', bg_outline_color='#000000', bg_outline_width=1,
+                 bg_color='#1e1e1e', bg_outline_color='#000000', bg_outline_width=1,
                  num_frames=10, padding=10, bg_shape='rectangle'):
         self.font_path = font_path
         self.font_size = font_size

@@ -17,10 +17,12 @@ voice_cli:
 video_cli:
   width: 1080
   height: 1920 
-  bg_color: '#81ff00'
+  bg_color: '#000000'
+  alpha: 0.9
   need_append_mp4: true
   append_mp4: "source/end.mp4"
 subtitle_cli:
+  show_keyword: false
   split: false
   keyword_dict_path: 'source/keyword_dict.txt'
   fad_out: 100
@@ -28,26 +30,32 @@ subtitle_cli:
   show_duration: 40
   font_alignment: 4
   font_size: 13
-  font_color: "&H00ffffff"
-  font_family: "Alibaba-PuHuiTi-Bold"
-  font_bold: 0
+  font_shad: 10
+  font_shad_color: "&000000"
+  font_color: "&fe2cfd"
+  font_family: "阿里妈妈数黑体 Bold"
+  font_bold: 3
   font_spacing: 10
   font_underline: 0
-  font_border_color: "&1bff00"
-  font_border_weight: 1
-  font_single_size: 20
-  font_single_color: "&000000"
-  font_single_family: "Alibaba-PuHuiTi-Bold"
+  font_border_color: "&ffffff"
+  font_border_weight: 0
+  font_single_size: 13
+  font_single_color: "&fe2cfd"
+  font_single_family: "阿里妈妈数黑体 Bold"
   font_single_border_color: "&ff2049"
-  font_single_border_weight: 3
-  font_single_bold: 1
+  font_single_border_weight: 0
+  font_single_bold: 0
   font_single_underline: 1
   font_single_spacing: 0
-  font_double_size: 26
-  font_double_color: "&000000"
-  font_double_family: "ZiTiQuanXinYiGuanHeiTi"
+  font_single_shad: 10
+  font_single_shad_color: "&000000"
+  font_double_size: 13
+  font_double_color: "&fe2cfd"
+  font_double_family: "阿里汉仪智能黑体"
   font_double_border_color: "&1bff00"
-  font_double_border_weight: 1
-  font_double_bold: 1
+  font_double_border_weight: 10
+  font_double_bold: 10
   font_double_underline: 1
   font_double_spacing: 0
+  font_double_shad: 0
+  font_double_shad_color: "&ffffff"

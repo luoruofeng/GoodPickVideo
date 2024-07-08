@@ -103,7 +103,7 @@ def main():
             bg_width,_ = bg_processor.get_width_height()
             bg_processor.trim_or_loop_video(video_duration) #bg视频长度 = 视频长度
             processor.resize_video(bg_width) #修改视频的比例 根据bg视频的宽度
-            processor.overlay_video(bg_file) #将视频重叠放到bg视频上
+            processor.overlay_video(bg_file, alpha=Config().video_cli["alpha"]) #将视频重叠放到bg视频上
         
         # 字幕
         formatted_vtt_file = append_to_filename(vtt_file,"_formatted")
@@ -124,12 +124,13 @@ def main():
             text2speech_converter.alignment = Config().subtitle_cli["font_alignment"]#字体位置
             text2speech_converter.bold = Config().subtitle_cli["font_bold"]#字体粗细
             text2speech_converter.underline = Config().subtitle_cli["font_underline"]#字体下划线
-            
+            text2speech_converter.shadow = Config().subtitle_cli["font_shad"]
+
             text2speech_converter.format_vtt_file(formatted_vtt_file)
             single_sound_timestamps, double_sound_timestamps = [] , [] #用于存放单引号和双引号的音效timestamp
             text2speech_converter.split_vtt(splited_vtt_file, single_sound_timestamps, double_sound_timestamps)#分词显示每行字幕
             
-            text2speech_converter.convert_vtt_to_ass(ass_file) # vtt转化为ass
+            text2speech_converter.convert_vtt_to_ass(ass_file, show_keyword=Config().subtitle_cli["show_keyword"]) # vtt转化为ass
             processor.add_ass_subtitles(ass_file) # ass字幕添加到video
 
         processor.remove_audio() # 静音
