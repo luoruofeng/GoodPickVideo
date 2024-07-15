@@ -2,6 +2,31 @@ from datetime import datetime
 import os
 import shutil
 import re
+import random
+
+def get_random_files(directory_path, num_files, file_extension='.mp4'):
+    """
+    递归随机读取指定路径文件夹下的指定后缀文件，读取指定数量，返回这些文件的绝对路径列表
+
+    :param directory_path: 指定的文件夹路径
+    :param file_extension: 文件后缀名（例如 '.mp4'）
+    :param num_files: 需要随机读取的文件数量
+    :return: 随机读取的文件绝对路径列表
+    """
+    # 获取所有指定后缀文件的绝对路径
+    all_files = []
+    for root, dirs, files in os.walk(directory_path):
+        for file in files:
+            if file.endswith(file_extension):
+                full_path = os.path.join(root, file)
+                all_files.append(os.path.abspath(full_path))
+    
+    # 如果文件总数少于需要的数量，返回所有文件
+    if len(all_files) <= num_files:
+        return all_files
+    
+    # 随机选择指定数量的文件
+    return random.sample(all_files, num_files)
 
 # 假设 caption 是一个包含文本的对象
 caption = type('', (), {})()  # 创建一个空对象模拟caption
@@ -12,7 +37,25 @@ def contains_chinese(text):
     hanzi_pattern = re.compile(r'[\u4e00-\u9fff]')
     return hanzi_pattern.search(text) is not None
 
+def get_files_in_directory(directory_path, file_extension):
+    """
+    读取指定文件夹中的所有指定后缀的文件，返回所有文件的绝对路径
 
+    :param directory_path: 指定的文件夹路径
+    :param file_extension: 文件后缀名（例如 '.mp4'）
+    :return: 所有指定后缀文件的绝对路径列表
+    """
+    files_list = []
+    
+    # 遍历指定目录及其子目录中的所有文件
+    for root, dirs, files in os.walk(directory_path):
+        for file in files:
+            if file.endswith(file_extension):
+                # 获取文件的绝对路径
+                full_path = os.path.join(root, file)
+                files_list.append(os.path.abspath(full_path))
+    
+    return files_list
 
 def get_filename_without_extension(path_or_filename):
     # 使用 os.path.basename 获取路径中的文件名（带后缀）

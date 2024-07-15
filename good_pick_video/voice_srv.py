@@ -71,6 +71,68 @@ class MP4ProcessorByffmpeg:
     def __init__(self, mp4_path, gpu = True):
         self.mp4_path = mp4_path
         self.gpu = gpu
+
+    
+    def trim_video(self,  duration, start_time = 0 ):
+        print(f"Starting trim_video with start_time={start_time}, duration={duration}")
+        
+        # 生成输出文件路径
+        output_path = os.path.splitext(self.mp4_path)[0] + '_temp.mp4'
+
+        hwaccel_args = ['-hwaccel', 'nvdec'] if self.gpu else []
+
+        # 构建 ffmpeg 命令参数列表
+        cmd = [
+            'ffmpeg',
+            '-ss', str(start_time),  # 起始时间
+            '-i', self.mp4_path,  # 输入视频文件
+            '-t', str(duration),  # 持续时间
+            '-c:v', 'copy',  # 直接拷贝视频流，不重新编码
+            '-c:a', 'copy',  # 直接拷贝音频流，不重新编码
+            output_path
+        ] + hwaccel_args
+        
+        # 打印 ffmpeg 命令行
+        print(f"命令行: {' '.join(cmd)}")
+        
+        # 执行 ffmpeg 命令
+        subprocess.run(cmd, check=True)
+        
+        print(f"Trimmed video saved to {output_path}")
+        
+        replace_file(self.mp4_path, output_path)
+
+    def concat_videos(self, video_paths, output_path):
+        print(f"Starting concat_videos with video_paths={video_paths}, output_path={output_path}")
+        
+        hwaccel_args = ['-hwaccel', 'nvdec'] if self.gpu else []
+
+        # 创建临时文件，列出所有待合并的视频路径
+        list_file_path = 'video_list.txt'
+        with open(list_file_path, 'w') as f:
+            for video_path in video_paths:
+                f.write(f"file '{video_path}'\n")
+        
+        # 构建 ffmpeg 命令参数列表
+        cmd = [
+            'ffmpeg',
+            '-f', 'concat',  # 使用 concat 格式
+            '-safe', '0',  # 允许绝对路径
+            '-i', list_file_path,  # 输入列表文件
+            '-c', 'copy',  # 直接拷贝视频流，不重新编码
+            output_path
+        ] + hwaccel_args
+        
+        # 打印 ffmpeg 命令行
+        print(f"命令行: {' '.join(cmd)}")
+        
+        # 执行 ffmpeg 命令
+        subprocess.run(cmd, check=True)
+        
+        # 删除临时文件
+        os.remove(list_file_path)
+        
+        print(f"Concatenated video saved to {output_path}")
     
     #有bug添加音效后的声音大于添加音效前的声音
     def add_audio_to_video(self, mp3_path, start_time):

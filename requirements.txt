@@ -22,3 +22,6 @@ webvtt-py==0.5.1
 
 # 中文分词
 jieba==0.42.1
+
+# 语音识别
+openai-whisper==20231117

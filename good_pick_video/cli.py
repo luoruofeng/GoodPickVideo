@@ -60,7 +60,9 @@ def main():
         mp3_file = txt_file.replace(".txt", ".mp3")
         vtt_file = txt_file.replace(".txt", ".vtt")
         ass_file = txt_file.replace(".txt", ".ass")
-        
+        mp4s = [] 
+
+
         if txt_file == None:
             print("没有在文件夹下找到txt文件: "+file_path)
             return
@@ -82,6 +84,12 @@ def main():
         music_duration = mp3handler.get_duration() # mp3时长
 
         processor = MP4ProcessorByffmpeg(mp4_file, gpu=True)
+
+        if Config().video_cli["need_random_video"]:
+            # 将随机视频库里的视频进行拼接
+            mp4s = get_random_files(Config().video_cli["random_path"], Config().video_cli["random_joint_number"])
+            processor.concat_videos(mp4s, mp4_file)
+
         if not os.path.exists(mp4_file): #生成纯色的mp4
             print("视频文件不存在 生成新的纯色mp4",mp4_file)
             processor.generate_blank_video(width=Config().video_cli["width"], height=Config().video_cli["height"], color=Config().video_cli["bg_color"], duration=music_duration)
@@ -91,7 +99,12 @@ def main():
         if music_duration > video_duration:
             print(f'声音时长于视频时长: 声音{mp3_file}文件 视频{mp4_file}文件 声音{music_duration}秒 视频{video_duration}秒')
             return
-        processor.crop_video(Config().voice_cli["top_padding"], Config().voice_cli["bottom_padding"]) #mp4裁剪大小
+        else:
+            print(f'声音时长小于视频时长: 声音{mp3_file}文件 视频{mp4_file}文件 声音{music_duration}秒 视频{video_duration}秒')
+            processor.trim_video(music_duration) #视频裁剪大小
+            video_duration = music_duration
+
+        # processor.crop_video(Config().voice_cli["top_padding"], Config().voice_cli["bottom_padding"]) #mp4裁剪大小
         
         #bg视频
         if Config().voice_cli["bg_path"] is not None:
@@ -125,6 +138,7 @@ def main():
             text2speech_converter.bold = Config().subtitle_cli["font_bold"]#字体粗细
             text2speech_converter.underline = Config().subtitle_cli["font_underline"]#字体下划线
             text2speech_converter.shadow = Config().subtitle_cli["font_shad"]
+            text2speech_converter.back_colour = Config().subtitle_cli["font_bg_color"]
 
             text2speech_converter.format_vtt_file(formatted_vtt_file)
             single_sound_timestamps, double_sound_timestamps = [] , [] #用于存放单引号和双引号的音效timestamp

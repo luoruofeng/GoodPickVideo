@@ -44,9 +44,10 @@ class SubtitleConverter:
         SHOW_ANIMATION = "\\t(0,"+str(Config().subtitle_cli["show_duration"])+",\\fscx"+str(Config().subtitle_cli["size_ratio"])+"\\fscy"+str(Config().subtitle_cli["size_ratio"])+")" 
         FAD_OUT = "\\fad(0,"+str(Config().subtitle_cli["fad_out"])+")"
         
-        FONT_SINGLE_STYLE = "\\fsp"+str(Config().subtitle_cli["font_single_spacing"])+"\\u"+str(Config().subtitle_cli["font_single_underline"])+"\\bord"+str(Config().subtitle_cli["font_single_border_weight"])+"\\4c"+ Config().subtitle_cli["font_single_border_color"]+"&"+"\\1c"+Config().subtitle_cli["font_single_color"]+"&"+"\\fn"+Config().subtitle_cli["font_single_family"]+"\\fs"+str(Config().subtitle_cli["font_single_size"])+"\\b"+str(Config().subtitle_cli["font_single_bold"])+"\\shadow"+str(Config().subtitle_cli["font_single_shad"])+"\\3c"+ Config().subtitle_cli["font_single_shad_color"]+"&"
-        FONT_DOUBLE_STYLE = "\\fsp"+str(Config().subtitle_cli["font_double_spacing"])+"\\u"+str(Config().subtitle_cli["font_double_underline"])+"\\bord"+str(Config().subtitle_cli["font_double_border_weight"])+"\\4c"+ Config().subtitle_cli["font_double_border_color"]+"&"+"\\1c"+Config().subtitle_cli["font_double_color"]+"&"+"\\fn"+Config().subtitle_cli["font_double_family"]+"\\fs"+str(Config().subtitle_cli["font_double_size"])+"\\b"+str(Config().subtitle_cli["font_double_bold"])+"\\shadow"+str(Config().subtitle_cli["font_double_shad"])+"\\3c"+ Config().subtitle_cli["font_double_shad_color"]+"&"
-        FONT_NORMAL_STYLE = "\\fsp"+str(Config().subtitle_cli["font_spacing"])+"\\u"+str(Config().subtitle_cli["font_underline"])+"\\bord"+str(Config().subtitle_cli["font_border_weight"])+"\\4c"+ Config().subtitle_cli["font_border_color"]+"&"+"\\1c"+Config().subtitle_cli["font_color"]+"&"+"\\fn"+Config().subtitle_cli["font_family"]+"\\fs"+str(Config().subtitle_cli["font_size"])+"\\b"+str(Config().subtitle_cli["font_bold"])+"\\shadow"+str(Config().subtitle_cli["font_shad"])+"\\3c"+ Config().subtitle_cli["font_shad_color"]+"&"
+        FONT_SINGLE_STYLE = "\\fsp"+str(Config().subtitle_cli["font_single_spacing"])+"\\u"+str(Config().subtitle_cli["font_single_underline"])+"\\bord"+str(Config().subtitle_cli["font_single_border_weight"])+"\\3c"+ Config().subtitle_cli["font_single_border_color"]+"&"+"\\1c"+Config().subtitle_cli["font_single_color"]+"&"+"\\fn"+Config().subtitle_cli["font_single_family"]+"\\fs"+str(Config().subtitle_cli["font_single_size"])+"\\bold"+str(Config().subtitle_cli["font_single_bold"])+"\\shad"+str(Config().subtitle_cli["font_single_shad"])+"\\3c"+ Config().subtitle_cli["font_single_shad_color"]+"&"
+        FONT_DOUBLE_STYLE = "\\fsp"+str(Config().subtitle_cli["font_double_spacing"])+"\\u"+str(Config().subtitle_cli["font_double_underline"])+"\\bord"+str(Config().subtitle_cli["font_double_border_weight"])+"\\3c"+ Config().subtitle_cli["font_double_border_color"]+"&"+"\\1c"+Config().subtitle_cli["font_double_color"]+"&"+"\\fn"+Config().subtitle_cli["font_double_family"]+"\\fs"+str(Config().subtitle_cli["font_double_size"])+"\\bold"+str(Config().subtitle_cli["font_double_bold"])+"\\shad"+str(Config().subtitle_cli["font_double_shad"])+"\\3c"+ Config().subtitle_cli["font_double_shad_color"]+"&"
+        FONT_NORMAL_STYLE = "\\fsp"+str(Config().subtitle_cli["font_spacing"])+"\\u"+str(Config().subtitle_cli["font_underline"])+"\\bord"+str(Config().subtitle_cli["font_border_weight"])+"\\3c"+ Config().subtitle_cli["font_border_color"]+"&"+"\\1c"+Config().subtitle_cli["font_color"]+"&"+"\\fn"+Config().subtitle_cli["font_family"]+"\\fs"+str(Config().subtitle_cli["font_size"])+"\\bold"+str(Config().subtitle_cli["font_bold"])+"\\shad"+str(Config().subtitle_cli["font_shad"])+"\\3c"+ Config().subtitle_cli["font_shad_color"]+"&"
+        
         ANIMATION_NORMAL = STYLE_START+ FONT_NORMAL_STYLE +SHOW_ANIMATION + FAD_OUT + STYLE_END
         STYLE_SINGLE =  STYLE_START + FONT_SINGLE_STYLE + STYLE_END
         STYLE_DOUBLE =  STYLE_START + FONT_DOUBLE_STYLE + STYLE_END
@@ -84,10 +85,13 @@ class SubtitleConverter:
                 new_lines.append(line + '\n')
             
             i += 1
-
-        if Config().subtitle_cli["split"] is True: #配置文件开启了分词
+        print("----------------------------")
+        print(Config().subtitle_cli["split"])
+        if Config().subtitle_cli["split"] : #配置文件开启了分词
             with open(output, 'w', encoding='utf-8') as file:
+                print(new_lines)
                 file.writelines(new_lines)
+            print("vtt split done*****************************************")
 
             replace_file(self.vtt_path, output)        
 

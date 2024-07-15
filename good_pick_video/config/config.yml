@@ -4,57 +4,61 @@ music_cli:
   single_sound: 'sound/coin07.mp3'
   double_sound: 'sound/correct_answer2.mp3'
   bg_music: 'sound/bg.mp3'
-  need_bg_music: true 
+  need_bg_music: false 
   need_sound: false 
   change_volume: 4.0
 voice_cli:
-  voice: 'zh-CN-YunjianNeural'
-  rate: +0%
-  volume: +20%
+  voice: 'en-US-AnaNeural'
+  rate: +30%
+  volume: +10%
   top_padding: 320
   bottom_padding: 320
   bg_path: 'source/bg.mp4'
 video_cli:
+  need_random_video: true
+  random_path: 'C:/Users/luoru/Desktop/sources'
+  random_joint_number: 10
   width: 1080
   height: 1920 
   bg_color: '#000000'
-  alpha: 0.9
+  alpha: 1.0
   need_append_mp4: true
   append_mp4: "source/end.mp4"
 subtitle_cli:
   show_keyword: false
-  split: false
+  split: true
   keyword_dict_path: 'source/keyword_dict.txt'
   fad_out: 100
   size_ratio: 150
   show_duration: 40
   font_alignment: 4
   font_size: 13
-  font_shad: 10
-  font_shad_color: "&000000"
+  font_shad: 5
+  font_shad_color: "&ffffff"
   font_color: "&fe2cfd"
-  font_family: "°¢ÀïÂèÂèÊýºÚÌå Bold"
-  font_bold: 3
-  font_spacing: 10
+  font_family: "ï¿½ï¿½ï¿½ïººï¿½ï¿½ï¿½ï¿½ï¿½Üºï¿½ï¿½ï¿½"
+  font_bold: 0
+  font_bg_color: "&HFFFFFF00"
+  font_spacing: 0
   font_underline: 0
   font_border_color: "&ffffff"
   font_border_weight: 0
   font_single_size: 13
-  font_single_color: "&fe2cfd"
-  font_single_family: "°¢ÀïÂèÂèÊýºÚÌå Bold"
-  font_single_border_color: "&ff2049"
-  font_single_border_weight: 0
+  font_single_color: "&cc3dcc"
+  font_single_family: "ï¿½ï¿½ï¿½ïººï¿½ï¿½ï¿½ï¿½ï¿½Üºï¿½ï¿½ï¿½"
+  font_single_border_color: "&fe2cfd"
+  font_single_border_weight: 6
   font_single_bold: 0
   font_single_underline: 1
   font_single_spacing: 0
-  font_single_shad: 10
-  font_single_shad_color: "&000000"
+  font_single_shad: 5
+  font_single_shad_color: "&ffffff"
   font_double_size: 13
   font_double_color: "&fe2cfd"
-  font_double_family: "°¢ÀïººÒÇÖÇÄÜºÚÌå"
-  font_double_border_color: "&1bff00"
-  font_double_border_weight: 10
-  font_double_bold: 10
+  font_double_family: "ï¿½ï¿½ï¿½ïººï¿½ï¿½ï¿½ï¿½ï¿½Üºï¿½ï¿½ï¿½"
+  font_double_border_color: "&ffffff"
+  font_double_border_weight: 6
+  font_double_bold: 0
   font_double_underline: 1
   font_double_spacing: 0
   font_double_shad: 0
